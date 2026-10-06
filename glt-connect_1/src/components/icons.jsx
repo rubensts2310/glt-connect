@@ -1,0 +1,15 @@
+const P = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round" };
+export const IHome = () => <svg {...P}><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg>;
+export const IKanban = () => <svg {...P}><rect x="3" y="4" width="5" height="16" rx="1.5" /><rect x="10" y="4" width="5" height="11" rx="1.5" /><rect x="17" y="4" width="4" height="7" rx="1.5" /></svg>;
+export const IChart = () => <svg {...P}><path d="M4 19V5M4 19h16" /><path d="M8 15l3-4 3 2 5-6" /></svg>;
+export const ICar = () => <svg {...P}><path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16" /><rect x="3" y="16" width="18" height="4" rx="1.5" /><circle cx="7.5" cy="18" r=".6" /><circle cx="16.5" cy="18" r=".6" /></svg>;
+export const IPlay = () => <svg {...P}><circle cx="12" cy="12" r="9" /><path d="M10 8.5l5 3.5-5 3.5z" /></svg>;
+export const IPlug = () => <svg {...P}><path d="M9 3v5M15 3v5M7 8h10v4a5 5 0 0 1-10 0zM12 17v4" /></svg>;
+export const IChat = () => <svg {...P}><path d="M4 5h16v11H9l-5 4z" /></svg>;
+export const IBolt = () => <svg {...P}><path d="M13 3L5 13h6l-1 8 8-10h-6z" /></svg>;
+export const IClock = () => <svg {...P} width="14" height="14"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
+export const ISend = () => <svg {...P} width="18" height="18"><path d="M4 12l16-8-6 16-3-7z" /></svg>;
+export const ILock = () => <svg {...P} width="14" height="14"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>;
+export const IBack = () => <svg {...P} width="18" height="18"><path d="M15 5l-7 7 7 7" /></svg>;
+export const IFast = () => <svg {...P}><path d="M4 6l7 6-7 6zM13 6l7 6-7 6z" /></svg>;
+export const IDoc = () => <svg {...P}><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v4h4M9 12h6M9 16h6" /></svg>;
