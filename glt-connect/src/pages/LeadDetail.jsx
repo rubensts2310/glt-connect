@@ -59,6 +59,7 @@ export default function LeadDetail() {
     const body = text.trim(); if (!body) return;
     setText("");
     const now = new Date().toISOString();
+    setMsgs((x) => [...x, { id: `tmp-${Date.now()}`, lead_id: lead.id, sender: "vendedor", body, meta: { seller: me?.name }, created_at: now }]);
     await sb.from("messages").insert({ lead_id: lead.id, sender: "vendedor", body, meta: { seller: me?.name } });
     const patch = { last_activity_at: now, bot_active: false, next_followup_at: new Date(Date.now() + 48 * 3600e3).toISOString(), followup_step: 0 };
     if (!lead.seller_id && me) Object.assign(patch, { seller_id: me.id, assigned_at: now, showroom_id: me.showroom_id });

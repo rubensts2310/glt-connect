@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./styles.css";
@@ -13,10 +13,15 @@ import PublicChat from "./pages/PublicChat";
 import { Catalogo, DemoCenter, Integraciones } from "./pages/Misc";
 import Cotizaciones from "./pages/Cotizaciones";
 import ModelDetail from "./pages/ModelDetail";
+const AutoshowApp = lazy(() => import("./autoshow/AutoshowApp"));
+const PublicASQuote = lazy(() => import("./autoshow/PublicASQuote"));
+const L = (el) => <Suspense fallback={<div style={{ padding: 40, textAlign: "center" }}>Cargando…</div>}>{el}</Suspense>;
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <Routes>
+      <Route path="/autoshow/c/:token" element={L(<PublicASQuote />)} />
+      <Route path="/autoshow/*" element={L(<AutoshowApp />)} />
       <Route path="/c/:token" element={<PublicQuote />} />
       <Route path="/chat" element={<PublicChat />} />
       <Route path="/chat/:token" element={<PublicChat />} />

@@ -5,7 +5,7 @@ import { FX, cuota, fmtQ, fmtUSD, toGTQ } from "../lib/format";
 import { Loading } from "../components/bits";
 import { AngleViewer, Pano360, VideoReel } from "../components/Media";
 
-function slots() {
+export function slots() {
   const out = []; const now = new Date();
   for (let d = 1; out.length < 12 && d < 10; d++) {
     const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
@@ -16,7 +16,7 @@ function slots() {
 }
 
 // Número que sube animado hasta su valor (arranca visible desde el valor final si el usuario prefiere menos movimiento)
-function CountUp({ value, fmt = (v) => v, ms = 900 }) {
+export function CountUp({ value, fmt = (v) => v, ms = 900 }) {
   const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   const [v, setV] = useState(reduce ? value : value * 0.6);
   const from = useRef(v);
@@ -30,7 +30,7 @@ function CountUp({ value, fmt = (v) => v, ms = 900 }) {
   return <span className="num">{fmt(v)}</span>;
 }
 
-function Countdown({ until }) {
+export function Countdown({ until }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
   const ms = new Date(until + "T23:59:59-06:00") - now;
@@ -45,7 +45,7 @@ function Countdown({ until }) {
   );
 }
 
-function Confetti({ run }) {
+export function Confetti({ run }) {
   const ref = useRef(null);
   useEffect(() => {
     if (!run || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
