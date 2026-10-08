@@ -6,6 +6,9 @@ import { fmtQ, fmtUSD } from "../lib/format";
 import { AngleViewer, Pano360, VideoReel } from "../components/Media";
 
 export const priceTxt = (m) => (m.currency === "USD" ? fmtUSD(m.price) : fmtQ(m.price));
+// Foto de un color: la propia o, si no tiene, la de referencia (otro color del mismo modelo)
+export const colorPhoto = (c) => (c?.img ? c : c?.ref ? { ...c, img: c.ref, isRef: true } : null);
+export const modelPhoto = (m) => colorPhoto((m?.colors || []).find((c) => c.img) || (m?.colors || []).find((c) => c.ref));
 export const bonusFor = (settings, id) => { const ev = settings?.event || {}; const v = ev.bono_por_modelo?.[id]; return Number(v ?? ev.bono_q ?? 0) || 0; };
 
 export function Stand({ onQuote, onCapture }) {
@@ -13,6 +16,7 @@ export function Stand({ onQuote, onCapture }) {
   const [f, setF] = useState("todos");
   const [open, setOpen] = useState(null);
   const ms = (data.models || []).filter((m) => f === "todos" || (f === "hibrido" ? /h[íi]brid/i.test(m.powertrain || "") : !/h[íi]brid/i.test(m.powertrain || "")));
+  const groups = [["En el stand", ms.filter((m) => m.in_show !== false)], ["Otros modelos", ms.filter((m) => m.in_show === false)]].filter(([, l]) => l.length);
   return (
     <div className="as-page">
       <div className="as-row-between">
@@ -21,22 +25,27 @@ export function Stand({ onQuote, onCapture }) {
         </div>
         <button className="as-btn as-primary" onClick={() => onCapture(null)}>＋ Registrar cliente</button>
       </div>
-      <div className="as-grid">
-        {ms.map((m) => {
-          const c = (m.colors || []).find((x) => x.img);
-          const b = bonusFor(data.settings, m.id);
-          return (
-            <button key={m.id} className="as-card as-model" onClick={() => setOpen(m)}>
-              <div className="as-model-img">{c && <img src={asset(c.img)} alt={m.name} loading="lazy" />}{b > 0 && <span className="as-bono">Bono {fmtQ(b)}</span>}</div>
-              <div className="as-model-meta">
-                <b>{m.name}</b>
-                <span className="as-muted">{m.powertrain}</span>
-                <span className="as-price">{m.price_from ? "Desde " : ""}{priceTxt(m)}</span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      {groups.map(([title, list]) => (
+        <section key={title} className="as-group">
+          {groups.length > 1 && <h3 className="as-group-title">{title}</h3>}
+          <div className="as-grid">
+            {list.map((m) => {
+              const c = modelPhoto(m);
+              const b = bonusFor(data.settings, m.id);
+              return (
+                <button key={m.id} className="as-card as-model" onClick={() => setOpen(m)}>
+                  <div className="as-model-img">{c && <img src={asset(c.img)} alt={m.name} loading="lazy" />}{b > 0 && <span className="as-bono">Bono {fmtQ(b)}</span>}</div>
+                  <div className="as-model-meta">
+                    <b>{m.name}</b>
+                    <span className="as-muted">{m.powertrain}</span>
+                    <span className="as-price">{m.price_from ? "Desde " : ""}{priceTxt(m)}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ))}
       {open && <ModelSheet m={open} onClose={() => setOpen(null)} onQuote={() => { setOpen(null); onQuote(open); }} onCapture={() => { setOpen(null); onCapture(open); }} />}
     </div>
   );
@@ -44,8 +53,10 @@ export function Stand({ onQuote, onCapture }) {
 
 export function ModelSheet({ m, onClose, onQuote, onCapture }) {
   const { data, fx } = useAS();
-  const colors = (m.colors || []).filter((c) => c.img);
+  const colors = m.colors || [];
+  const interiors = m.interior_colors || [];
   const [ci, setCi] = useState(0);
+  const photo = colorPhoto(colors[ci]);
   const [tab, setTab] = useState("resumen");
   const versions = m.versions || [];
   const defaultV = Math.max(0, versions.findIndex((v) => (/h[íi]brid/i.test(m.powertrain || "") ? /h[íi]brid/i.test(v.name) : !/h[íi]brid/i.test(v.name))));
@@ -69,11 +80,20 @@ export function ModelSheet({ m, onClose, onQuote, onCapture }) {
       </div>
       <div className="as-sheet-body">
         <div className="as-sheet-left">
-          <AngleViewer color={colors[ci]} alt={m.name} />
+          <div className="as-photo">
+            {photo ? <AngleViewer color={photo} alt={m.name} /> : <div className="as-nophoto">Foto próximamente</div>}
+            {photo?.isRef && <span className="as-refnote">Foto referencial</span>}
+          </div>
           <div className="as-swatches">
             {colors.map((c, i) => <button key={c.name} className={`as-sw ${i === ci ? "on" : ""}`} style={{ background: c.hex }} onClick={() => setCi(i)} aria-label={c.name} />)}
             <span className="as-muted">{colors[ci]?.name}</span>
           </div>
+          {interiors.length > 0 && (
+            <div className="as-interiors">
+              <span className="as-label">Interior</span>
+              {interiors.map((c) => <span key={c.name} className="as-int"><i style={{ background: c.hex }} />{c.name}</span>)}
+            </div>
+          )}
         </div>
         <div className="as-sheet-right">
           <div className="as-pricebox">

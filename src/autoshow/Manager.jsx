@@ -1,6 +1,7 @@
 // Panel de gerencia: avance del evento, asesores, configuración y exportación
 import { useMemo, useState } from "react";
 import { useAS } from "./store";
+import { Avatar, squarePhoto } from "./Avatar";
 import { fmtQ } from "../lib/format";
 import { Lollipop } from "../components/charts";
 
@@ -82,12 +83,21 @@ function Sellers({ sellers, manager, toast, refresh }) {
       <div className="as-card pad">
         <div className="as-row-between"><span className="as-label">Usuarios</span><button className="as-btn as-primary sm" onClick={() => setF({ name: "", role: "vendedor", phone: "", pin: "", active: true })}>＋ Agregar asesor</button></div>
         <div className="as-list">
-          {sellers.map((s) => <button key={s.id} className="as-lrow" onClick={() => setF({ ...s, pin: "" })}><div className="as-lmain"><b>{s.name}</b><span className="as-muted">{s.role === "gerente" ? "Gerencia" : "Asesor"}{s.phone ? ` · WhatsApp ${s.phone}` : ""}</span></div>{s.active === false && <span className="as-pill bad">Inactivo</span>}</button>)}
+          {sellers.map((s) => <button key={s.id} className="as-lrow" onClick={() => setF({ ...s, pin: "" })}><Avatar person={s} /><div className="as-lmain"><b>{s.name}</b><span className="as-muted">{s.role === "gerente" ? "Gerencia" : "Asesor"}{s.phone ? ` · WhatsApp ${s.phone}` : ""}</span></div>{s.active === false && <span className="as-pill bad">Inactivo</span>}</button>)}
         </div>
       </div>
       {f && (
         <div className="as-card pad">
           <span className="as-label">{f.id ? "Editar usuario" : "Nuevo asesor"}</span>
+          <div className="as-field"><span>Foto (la ve el cliente en WhatsApp y en su cotización)</span>
+            <div className="as-photo-pick">
+              {f.photo_data ? <img className="as-av lg as-av-img" src={f.photo_data} alt="" /> : <Avatar person={f} className="as-av lg" />}
+              <label className="as-btn as-ghost sm">{f.photo_data || f.photo ? "Cambiar foto" : "Tomar o subir foto"}
+                <input type="file" accept="image/*" hidden onChange={async (e) => { const file = e.target.files?.[0]; e.target.value = ""; if (!file) return; try { setF({ ...f, photo_data: await squarePhoto(file) }); } catch (x) { toast("Foto no válida", x.message, "bad"); } }} />
+              </label>
+              {(f.photo_data || f.photo) && <button className="as-btn as-ghost sm" onClick={() => setF({ ...f, photo: null, photo_data: null })}>Quitar</button>}
+            </div>
+          </div>
           <label className="as-field"><span>Nombre</span><input className="as-inp" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></label>
           <label className="as-field"><span>WhatsApp del asesor (lo ve el cliente en su cotización)</span><input className="as-inp" inputMode="tel" value={f.phone || ""} onChange={(e) => setF({ ...f, phone: e.target.value })} /></label>
           <div className="as-field"><span>Rol</span><div className="as-seg">{[["vendedor", "Asesor"], ["gerente", "Gerencia"]].map(([k, l]) => <button key={k} className={f.role === k ? "on" : ""} onClick={() => setF({ ...f, role: k })}>{l}</button>)}</div></div>

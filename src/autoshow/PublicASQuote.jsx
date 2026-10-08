@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { asset, assetFile, SUPABASE_KEY, SUPABASE_URL } from "../lib/supabase";
-import { cuota, fmtQ, fmtUSD } from "../lib/format";
+import { cuota, fmtQ, fmtUSD, initials } from "../lib/format";
+import { sellerPhoto } from "./Avatar";
 import { Loading } from "../components/bits";
 import { AngleViewer, Pano360, VideoReel } from "../components/Media";
 import { Confetti, CountUp, Countdown, slots } from "../pages/PublicQuote";
@@ -59,7 +60,8 @@ export default function PublicASQuote() {
 
   const { quote: q, model: m, seller } = d;
   const contado = !q.term_months;
-  const color = (m.colors || []).find((c) => c.name === q.color) || { img: q.color_img, name: q.color };
+  const qc = (m.colors || []).find((c) => c.name === q.color);
+  const color = qc?.img ? qc : { ...qc, img: qc?.ref || q.color_img, name: q.color };
   const videos = (m.media || []).filter((x) => x.type === "video");
   const panos = (m.media || []).filter((x) => x.type === "pano");
   const rate = (d.banks || []).find((b) => b.name === bank)?.rate ?? Number(q.rate) ?? 9.5;
@@ -84,10 +86,11 @@ export default function PublicASQuote() {
           <p style={{ margin: "8px 0 0", opacity: 0.75, ...fade(1) }}>{m.tagline}</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12, ...fade(2) }}>
             {q.color && <span className="chip" style={{ background: "rgba(255,255,255,.12)", color: "#fff" }}>{q.color}</span>}
+            {q.interior && <span className="chip" style={{ background: "rgba(255,255,255,.12)", color: "#fff" }}>Interior {q.interior}</span>}
             <span className="chip" style={{ background: "rgba(255,255,255,.12)", color: "#fff" }}>{m.powertrain}</span>
             <span className="chip" style={{ background: "var(--blue)", color: "#fff" }}>Garantía {m.warranty}</span>
           </div>
-          <div style={{ margin: "14px -20px 0", background: "linear-gradient(#0d1014 0%, #0d1014 30%, #fff 30%)", padding: "0 12px", ...fade(3) }}><AngleViewer color={color} alt={m.name} /></div>
+          <div style={{ margin: "14px -20px 0", background: "linear-gradient(#0d1014 0%, #0d1014 30%, #fff 30%)", padding: "0 12px", ...fade(3) }}><AngleViewer color={color} alt={m.name} />{color.img && !qc?.img && <div style={{ textAlign: "center", fontSize: 11.5, color: "#6b7280", padding: "4px 0" }}>Foto referencial · color {q.color}</div>}</div>
         </section>
 
         {q.bonus_amount > 0 && (
@@ -166,7 +169,16 @@ export default function PublicASQuote() {
             <div style={{ fontSize: 14 }}>{seller?.name ? `${seller.name.split(" ")[0]} le contactará` : "Su asesor le contactará"} muy pronto para {done === "quiero_este" ? "apartar su unidad" : "confirmar su test drive"}.</div>
           </section>
         )}
-        <p className="faint" style={{ textAlign: "center", fontSize: 12, padding: "0 20px" }}>Le atiende: <b>{seller?.name || "Jetour Guatemala"}</b></p>
+        <section style={{ margin: "0 20px 18px", padding: 14, borderRadius: 18, border: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 14 }}>
+          {sellerPhoto(seller)
+            ? <img src={sellerPhoto(seller)} alt={seller.name} style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", flex: "0 0 auto" }} />
+            : <span style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--blue)", color: "#fff", display: "grid", placeItems: "center", fontWeight: 800, fontSize: 22, flex: "0 0 auto" }}>{initials(seller?.name || "Jetour")}</span>}
+          <div style={{ minWidth: 0 }}>
+            <div className="faint" style={{ fontSize: 12 }}>Le atiende</div>
+            <b style={{ fontSize: 17 }}>{seller?.name || "Jetour Guatemala"}</b>
+            <div className="muted" style={{ fontSize: 13 }}>Asesor Jetour{seller?.showroom ? ` · ${seller.showroom}` : ""}</div>
+          </div>
+        </section>
 
         <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, display: "flex", justifyContent: "center", zIndex: 20 }}>
           <div style={{ width: "100%", maxWidth: 560, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "10px 12px calc(10px + env(safe-area-inset-bottom,0px))", background: "rgba(255,255,255,.95)", backdropFilter: "blur(10px)", borderTop: "1px solid var(--line)" }}>

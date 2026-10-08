@@ -8,7 +8,7 @@ import Capture from "./Capture";
 import { Clients, FollowUp, LeadSheet } from "./Clients";
 import Manager from "./Manager";
 import { assetFile } from "../lib/supabase";
-import { initials } from "../lib/format";
+import { Avatar } from "./Avatar";
 
 function useInstallable() {
   useEffect(() => {
@@ -29,7 +29,7 @@ function usePrecache() {
     if (!data.models?.length || !("caches" in window)) return;
     const urls = new Set();
     for (const m of data.models) {
-      for (const c of m.colors || []) if (c.img) { urls.add(assetUrl(c.img)); for (const a of c.angles || []) urls.add(assetUrl(c.img.replace("_hero", `_${a}`))); }
+      for (const c of m.colors || []) { const img = c.img || c.ref; if (img) { urls.add(assetUrl(img)); for (const a of c.angles || []) urls.add(assetUrl(img.replace("_hero", `_${a}`))); } }
       for (const x of m.media || []) if (x.type !== "video") urls.add(assetUrl(x.src)); else if (x.poster) urls.add(x.poster);
     }
     caches.open("as-media-v1").then(async (c) => { for (const u of urls) { try { if (!(await c.match(u))) await c.add(u); } catch {} } }).catch(() => {});
@@ -55,7 +55,7 @@ function Shell() {
             <i />{!online ? `Sin señal${pending ? ` · ${pending} por subir` : ""}` : pending ? (syncing ? "Subiendo…" : `${pending} por subir`) : "Al día"}
           </button>
           <button className="as-who" onClick={() => { if (!pending || confirm(`Hay ${pending} cambios sin subir. Se subirán cuando ${me.name.split(" ")[0]} vuelva a entrar. ¿Cambiar de asesor?`)) signOut(true); }}>
-            <span className="as-av">{initials(me.name)}</span><span className="as-hide-sm">{me.name.split(" ")[0]}</span><small>Cambiar</small>
+            <Avatar person={me} /><span className="as-hide-sm">{me.name.split(" ")[0]}</span><small>Cambiar</small>
           </button>
         </div>
       </header>

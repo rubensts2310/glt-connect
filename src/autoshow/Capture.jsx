@@ -4,7 +4,7 @@ import { calcQuote, quoteLink, TEMPS, useAS, uuid, waLink } from "./store";
 import { asset } from "../lib/supabase";
 import { fmtQ } from "../lib/format";
 import { QR } from "../components/bits";
-import { bonusFor, priceTxt } from "./Stand";
+import { bonusFor, colorPhoto, modelPhoto, priceTxt } from "./Stand";
 
 const PAGOS = [["contado", "Contado"], ["credito", "Financiado"], ["no_sabe", "No sabe"]];
 const PLAZOS = [["inmediato", "Este mes"], ["1-3m", "1–3 meses"], ["3-6m", "3–6 meses"], ["6m+", "Más adelante"]];
@@ -72,7 +72,7 @@ function ClientForm({ c, up, models, err, onSave, onQuote }) {
         <div className="as-temps">{Object.entries(TEMPS).map(([k, t]) => <button key={k} className={`as-temp ${t.cls} ${c.temperature === k ? "on" : ""}`} onClick={() => up("temperature", k)}><b>{t.emoji}</b><span>{t.label}</span></button>)}</div>
       </div>
       <div className="as-field"><span>Modelo de interés *</span>
-        <div className="as-modelpick">{models.map((m) => <button key={m.id} className={c.model_id === m.id ? "on" : ""} onClick={() => up("model_id", m.id)}>{(m.colors || []).find((x) => x.img) && <img src={asset(m.colors.find((x) => x.img).img)} alt="" />}<span>{m.name}</span></button>)}</div>
+        <div className="as-modelpick">{models.map((m) => <button key={m.id} className={c.model_id === m.id ? "on" : ""} onClick={() => up("model_id", m.id)}>{modelPhoto(m) && <img src={asset(modelPhoto(m).img)} alt="" />}<span>{m.name}</span></button>)}</div>
       </div>
       <div className="as-form-grid">
         <div className="as-field"><span>Forma de pago</span><div className="as-seg">{PAGOS.map(([k, l]) => <button key={k} className={c.pago === k ? "on" : ""} onClick={() => up("pago", c.pago === k ? null : k)}>{l}</button>)}</div></div>
@@ -103,8 +103,11 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
   const ACC = data.settings?.accessories || [];
   const [mid, setMid] = useState(initialModel?.id || data.models[0]?.id);
   const model = data.models.find((m) => m.id === mid);
-  const colors = (model?.colors || []).filter((x) => x.img);
+  const colors = model?.colors || [];
   const [ci, setCi] = useState(0);
+  const photo = colorPhoto(colors[ci]);
+  const interiors = model?.interior_colors || [];
+  const [ii, setIi] = useState(0);
   const [acc, setAcc] = useState([]);
   const [bonus, setBonus] = useState(() => bonusFor(data.settings, initialModel?.id || data.models[0]?.id));
   const [tradeOn, setTradeOn] = useState(!!lead.parte_pago);
@@ -116,10 +119,10 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
   const accItems = ACC.filter((a) => acc.includes(a.id));
   const q = useMemo(() => calcQuote({ model, fx, bonus, accessories: accItems, trade: tradeOn ? Number(trade.value) || 0 : 0, enganche: eng, term, rate }), [model, fx, bonus, accItems, tradeOn, trade, eng, term, rate]);
   const contado = lead.pago === "contado";
-  const setModel = (id) => { setMid(id); setCi(0); setBonus(bonusFor(data.settings, id)); };
+  const setModel = (id) => { setMid(id); setCi(0); setIi(0); setBonus(bonusFor(data.settings, id)); };
   const valid = new Date(Date.now() + (Number(ev.validez_dias) || 15) * 864e5).toISOString().slice(0, 10);
   const save = () => onSave({
-    id: uuid(), public_token: uuid(), lead_id: lead.id, model_id: model.id, color: colors[ci]?.name, color_img: colors[ci]?.img,
+    id: uuid(), public_token: uuid(), lead_id: lead.id, model_id: model.id, color: colors[ci]?.name, color_img: photo?.img, interior: interiors[ii]?.name || null,
     price: model.price, currency: model.currency, bonus_label: bonus ? ev.bono_label || "Bono Autoshow" : null, bonus_amount: Number(bonus) || 0,
     accessories: accItems, trade_in: tradeOn && trade.desc ? { desc: trade.desc, value: Number(trade.value) || 0 } : null,
     enganche_q: contado ? q.total : q.eng, term_months: contado ? null : term, bank: contado ? null : bank, rate: contado ? null : rate,
@@ -130,8 +133,16 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
     <div className="as-quote">
       <div className="as-quote-left">
         <select className="as-inp" value={mid} onChange={(e) => setModel(e.target.value)} aria-label="Modelo">{data.models.map((m) => <option key={m.id} value={m.id}>{m.name} · {priceTxt(m)}</option>)}</select>
-        {colors[ci] && <img className="as-quote-car" src={asset(colors[ci].img)} alt={model.name} />}
-        <div className="as-swatches">{colors.map((x, i) => <button key={x.name} className={`as-sw ${i === ci ? "on" : ""}`} style={{ background: x.hex }} onClick={() => setCi(i)} aria-label={x.name} />)}<span className="as-muted">{colors[ci]?.name}</span></div>
+        <div className="as-photo">
+          {photo ? <img className="as-quote-car" src={asset(photo.img)} alt={model.name} /> : <div className="as-nophoto">Foto próximamente</div>}
+          {photo?.isRef && <span className="as-refnote">Foto referencial</span>}
+        </div>
+        <div className="as-field"><span>Color exterior</span>
+          <div className="as-swatches">{colors.map((x, i) => <button key={x.name} className={`as-sw ${i === ci ? "on" : ""}`} style={{ background: x.hex }} onClick={() => setCi(i)} aria-label={x.name} />)}<span className="as-muted">{colors[ci]?.name}</span></div>
+        </div>
+        {interiors.length > 0 && <div className="as-field"><span>Color interior</span>
+          <div className="as-swatches">{interiors.map((x, i) => <button key={x.name} className={`as-sw ${i === ii ? "on" : ""}`} style={{ background: x.hex }} onClick={() => setIi(i)} aria-label={x.name} />)}<span className="as-muted">{interiors[ii]?.name}</span></div>
+        </div>}
         {ACC.length > 0 && <div className="as-field"><span>Accesorios</span><div className="as-accs">{ACC.map((a) => <button key={a.id} className={acc.includes(a.id) ? "on" : ""} onClick={() => setAcc((x) => (x.includes(a.id) ? x.filter((y) => y !== a.id) : [...x, a.id]))}>{a.name}<small>{fmtQ(a.price)}</small></button>)}</div></div>}
       </div>
       <div className="as-quote-right">
@@ -178,7 +189,9 @@ function Share({ lead, quote, onNew, onOpenLead, logActivity, me }) {
   const link = quoteLink(quote.public_token);
   const m = data.models.find((x) => x.id === quote.model_id);
   const first = (lead.name || "").split(" ")[0];
-  const text = `¡Hola ${first}! Soy ${(me?.name || "").split(" ")[0]}, de Jetour 👋 Aquí está su cotización de la ${m?.name} ${quote.color || ""} con el ${data.settings?.event?.bono_label || "bono del autoshow"}: ${link}`;
+  const text = `¡Hola ${first}! Soy ${me?.name || "su asesor"}, su asesor de Jetour 👋 Aquí está su cotización de la ${m?.name} ${quote.color || ""} con el ${data.settings?.event?.bono_label || "bono del autoshow"}: ${link}
+
+Cualquier duda, le atiendo por aquí.`;
   const wa = waLink(lead.phone, text);
   const [sent, setSent] = useState(false);
   return (
@@ -191,7 +204,7 @@ function Share({ lead, quote, onNew, onOpenLead, logActivity, me }) {
       </div>
       <div className="as-share-side">
         <h2>Cotización lista para {first}</h2>
-        <p className="as-muted">{m?.name} · {quote.color} · Total {fmtQ(quote.total)}{quote.monthly ? ` · cuota ${fmtQ(quote.monthly)}/mes` : ""}</p>
+        <p className="as-muted">{m?.name} · {quote.color}{quote.interior ? ` · interior ${quote.interior}` : ""} · Total {fmtQ(quote.total)}{quote.monthly ? ` · cuota ${fmtQ(quote.monthly)}/mes` : ""}</p>
         {wa && <a className="as-btn as-wa as-lg" href={wa} target="_blank" rel="noreferrer" onClick={() => { if (!sent) { logActivity(lead.id, "whatsapp_stand", "Cotización enviada por WhatsApp desde el stand"); setSent(true); } }}>Enviar por WhatsApp a {lead.phone}</a>}
         <button className="as-btn as-ghost as-lg" onClick={() => navigator.clipboard?.writeText(link)}>Copiar enlace</button>
         <button className="as-btn as-ghost as-lg" onClick={onOpenLead}>Ver ficha del cliente</button>

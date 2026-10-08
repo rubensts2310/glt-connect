@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     }
     const [{ data: model }, { data: seller }, { data: st }] = await Promise.all([
       db.from("as_models").select("id,name,version,price,currency,price_from,powertrain,tagline,highlights,specs,colors,versions,media,warranty").eq("id", q.model_id).single(),
-      db.from("as_sellers").select("name,phone,showroom").eq("id", q.seller_id).maybeSingle(),
+      db.from("as_sellers").select("name,phone,showroom,photo").eq("id", q.seller_id).maybeSingle(),
       db.from("as_settings").select("key,value").in("key", ["banks", "event", "fx"]),
     ]);
     const s = Object.fromEntries((st ?? []).map((r: any) => [r.key, r.value]));

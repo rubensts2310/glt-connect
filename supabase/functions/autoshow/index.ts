@@ -49,7 +49,7 @@ async function device(token: string) {
 }
 async function session(token: string) {
   const p = await verify(token, "ses");
-  const { data: s } = await db.from("as_sellers").select("id,name,role,active,phone").eq("id", p.sid).single();
+  const { data: s } = await db.from("as_sellers").select("id,name,role,active,phone,photo").eq("id", p.sid).single();
   if (!s || !s.active) fail(401, "Usuario inactivo");
   return { ...s, did: p.did as string };
 }
@@ -111,7 +111,7 @@ async function upsertQuote(ses: any, q: any) {
   const { data: exists } = await db.from("as_quotes").select("id").eq("id", q.id).maybeSingle();
   const row = {
     id: q.id, public_token: q.public_token, lead_id: q.lead_id, seller_id: lead!.seller_id, model_id: q.model_id,
-    color: clean(q.color, 60), color_img: clean(q.color_img, 120), price: m!.price, currency: m!.currency,
+    color: clean(q.color, 60), color_img: clean(q.color_img, 120), interior: clean(q.interior, 60), price: m!.price, currency: m!.currency,
     bonus_label: clean(q.bonus_label, 80), bonus_amount: Math.max(0, Number(q.bonus_amount) || 0), accessories: Array.isArray(q.accessories) ? q.accessories.slice(0, 12) : [],
     trade_in: q.trade_in && q.trade_in.desc ? { desc: clean(q.trade_in.desc, 120), value: Math.max(0, Number(q.trade_in.value) || 0) } : null,
     enganche_q: Math.max(0, Number(q.enganche_q) || 0), term_months: Number(q.term_months) || 60, bank: clean(q.bank, 60), rate: Number(q.rate) || null,
@@ -146,7 +146,7 @@ async function bootstrap(ses: any) {
     db.from("as_models").select("*").eq("active", true).order("sort"),
     db.from("as_settings").select("key,value").in("key", ["event", "banks", "fx", "accessories"]),
     isMgr ? leadsQ : leadsQ.eq("seller_id", ses.id),
-    db.from("as_sellers").select("id,name,role,phone,active").order("name"),
+    db.from("as_sellers").select("id,name,role,phone,active,photo").order("name"),
   ]);
   const ids = (leads ?? []).map((l: any) => l.id);
   const chunks = (a: string[], n = 300) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
@@ -159,9 +159,9 @@ async function bootstrap(ses: any) {
     quotes = quotes.concat(q.data ?? []); acts = acts.concat(a.data ?? []);
   }
   return {
-    me: { id: ses.id, name: ses.name, role: ses.role, phone: ses.phone },
+    me: { id: ses.id, name: ses.name, role: ses.role, phone: ses.phone, photo: ses.photo },
     models, settings: Object.fromEntries((settings ?? []).map((s: any) => [s.key, s.value])),
-    leads, quotes, activities: acts, sellers: isMgr ? sellers : (sellers ?? []).filter((s: any) => s.id === ses.id).map((s: any) => ({ id: s.id, name: s.name, role: s.role })),
+    leads, quotes, activities: acts, sellers: isMgr ? sellers : (sellers ?? []).filter((s: any) => s.id === ses.id).map((s: any) => ({ id: s.id, name: s.name, role: s.role, photo: s.photo })),
     server_time: new Date().toISOString(),
   };
 }
@@ -245,8 +245,19 @@ Deno.serve(async (req) => {
         const { data: h } = await db.rpc("as_hash", { p_plain: String(d.pin) });
         Object.assign(row, { pin_hash: h, failed_attempts: 0, locked_until: null });
       } else if (!d.id) fail(400, "PIN requerido para un usuario nuevo");
-      const q = d.id ? db.from("as_sellers").update(row).eq("id", d.id) : db.from("as_sellers").insert(row);
-      const { error } = await q; if (error) fail(400, error.message);
+      const { data: saved, error } = await (d.id ? db.from("as_sellers").update(row).eq("id", d.id) : db.from("as_sellers").insert(row)).select("id").single();
+      if (error) fail(400, error.message);
+      // foto del asesor: JPEG ya recortado en la tablet; se guarda con nombre nuevo para no pelear con la caché
+      if (d.photo_data) {
+        const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(d.photo_data));
+        if (!m) fail(400, "Formato de foto no válido");
+        const bytes = Uint8Array.from(atob(m![1]), (c) => c.charCodeAt(0));
+        if (bytes.length > 600_000) fail(400, "La foto es demasiado grande");
+        const path = `sellers/${saved!.id}-${Date.now()}.jpg`;
+        const { error: up } = await db.storage.from("assets").upload(path, bytes, { contentType: "image/jpeg", cacheControl: "31536000" });
+        if (up) fail(400, up.message);
+        await db.from("as_sellers").update({ photo: path }).eq("id", saved!.id);
+      } else if (d.photo === null) await db.from("as_sellers").update({ photo: null }).eq("id", saved!.id);
       return json({ ok: true });
     }
 
