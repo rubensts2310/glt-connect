@@ -149,7 +149,7 @@ export default function PublicASQuote() {
         {(version.specs || []).length > 0 && (
           <section style={{ padding: "0 20px 18px" }}>
             <details><summary style={{ fontWeight: 800, cursor: "pointer" }}>Ficha técnica completa</summary>
-              {(version.specs || []).map((g) => <div key={g.t} style={{ marginTop: 10 }}><div className="label">{g.t}</div>{g.rows.map(([k, v]) => <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderBottom: "1px solid var(--line)" }}><span className="muted">{k}</span><b style={{ textAlign: "right" }}>{v}</b></div>)}</div>)}
+              {(version.specs || []).map((g) => <div key={g.t} style={{ marginTop: 10 }}><div className="label">{g.t}</div>{g.rows.map(([k, v]) => <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderBottom: "1px solid var(--line)" }}>{v == null ? <span>✓ {k}</span> : <><span className="muted">{k}</span><b style={{ textAlign: "right" }}>{v}</b></>}</div>)}</div>)}
             </details>
           </section>
         )}

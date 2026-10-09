@@ -131,6 +131,8 @@ textarea.as-inp{resize:vertical;line-height:1.45}
 .as-specs summary{font-weight:800;cursor:pointer;font-size:16px;padding:4px 0}
 .as-specrow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--as-line);font-size:14px}
 .as-specrow span{color:var(--as-ink2)}.as-specrow b{text-align:right}
+.as-specitem{justify-content:flex-start;color:var(--as-ink)}
+.as-specitem::before{content:"✓";color:var(--as-good);font-weight:800;flex:0 0 auto}
 .as-steps{flex:1;display:flex;gap:6px;justify-content:center}
 .as-steps span{font-weight:700;font-size:14px;color:var(--as-ink3);padding:8px 14px;border-radius:99px}
 .as-steps span.on{background:var(--as-ink);color:#fff}.as-steps span.done{color:var(--as-good)}

@@ -117,7 +117,7 @@ export function ModelSheet({ m, onClose, onQuote, onCapture }) {
               {(v.specs || []).map((g) => (
                 <details key={g.t} open={g === (v.specs || [])[0]}>
                   <summary>{g.t}</summary>
-                  {g.rows.map(([k, val]) => <div key={k} className="as-specrow"><span>{k}</span><b>{val}</b></div>)}
+                  {g.rows.map(([k, val]) => (val == null ? <div key={k} className="as-specrow as-specitem">{k}</div> : <div key={k} className="as-specrow"><span>{k}</span><b>{val}</b></div>))}
                 </details>
               ))}
             </div>
