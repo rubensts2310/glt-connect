@@ -189,7 +189,7 @@ function Share({ lead, quote, onNew, onOpenLead, logActivity, me }) {
   const link = quoteLink(quote.public_token);
   const m = data.models.find((x) => x.id === quote.model_id);
   const first = (lead.name || "").split(" ")[0];
-  const text = `¡Hola ${first}! Soy ${me?.name || "su asesor"}, su asesor de Jetour 👋 Aquí está su cotización de la ${m?.name} ${quote.color || ""} con el ${data.settings?.event?.bono_label || "bono del autoshow"}: ${link}
+  const text = `¡Hola ${first}! Soy ${me?.name || "su asesor"}, su asesor de Jetour. Aquí está su cotización de la ${m?.name} ${quote.color || ""} con el ${data.settings?.event?.bono_label || "bono del autoshow"}: ${link}
 
 Cualquier duda, le atiendo por aquí.`;
   const wa = waLink(lead.phone, text);
