@@ -122,6 +122,14 @@ export default function PublicASQuote() {
           </section>
         )}
 
+        {(version.specs || []).length > 0 && (
+          <section style={{ padding: "0 20px 18px" }}>
+            <details style={{ border: "1px solid var(--line)", borderRadius: 18, padding: "14px 16px" }}><summary style={{ fontWeight: 800, fontSize: 17, cursor: "pointer" }}>Ficha técnica completa <span className="faint" style={{ fontSize: 12, fontWeight: 600 }}>· toque para ver</span></summary>
+              {(version.specs || []).map((g) => <div key={g.t} style={{ marginTop: 10 }}><div className="label">{g.t}</div>{g.rows.map(([k, v]) => <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderBottom: "1px solid var(--line)" }}>{v == null ? <span>✓ {k}</span> : <><span className="muted">{k}</span><b style={{ textAlign: "right" }}>{v}</b></>}</div>)}</div>)}
+            </details>
+          </section>
+        )}
+
         <section style={{ padding: "0 20px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
           <h2>Su inversión</h2>
           {[["Precio de lista", q.currency === "USD" ? `${fmtUSD(q.price)} (≈ ${fmtQ(calc.list)})` : fmtQ(calc.list)],
@@ -130,7 +138,7 @@ export default function PublicASQuote() {
             ...(calc.trade ? [[`Su vehículo: ${q.trade_in.desc}`, `− ${fmtQ(calc.trade)}`]] : [])].map(([k, v], i) =>
             <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 14 }}><span className="muted">{k}</span><b className="num" style={{ color: v.startsWith("−") ? "var(--good)" : undefined }}>{v}</b></div>)}
           <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}><b>Total</b><b style={{ fontSize: 30 }}><CountUp value={calc.total} fmt={fmtQ} /></b></div>
-          <span className="faint" style={{ fontSize: 12 }}>Precios con IVA incluido.{q.valid_until ? ` Oferta válida hasta el ${new Date(q.valid_until + "T12:00:00").toLocaleDateString("es-GT", { day: "numeric", month: "long" })}.` : ""}</span>
+          <span className="faint" style={{ fontSize: 12 }}>{/h[íi]brid/i.test(m.powertrain || "") ? "Vehículo híbrido exento de IVA." : "Precios con IVA incluido."}{calc.trade ? " Avalúo del vehículo usado sujeto a evaluación y confirmación final." : ""}{q.valid_until ? ` Oferta válida hasta el ${new Date(q.valid_until + "T12:00:00").toLocaleDateString("es-GT", { day: "numeric", month: "long" })}.` : ""}</span>
           {q.valid_until && q.bonus_amount > 0 && <Countdown until={q.valid_until} />}
         </section>
 
@@ -142,15 +150,7 @@ export default function PublicASQuote() {
             <input type="range" min={0} max={Math.round((calc.total * 0.7) / 5000) * 5000} step={5000} value={engC} onChange={(e) => setEng(Number(e.target.value))} aria-label="Enganche" />
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{[36, 48, 60, 72].map((t) => <button key={t} className="btn sm" style={{ background: t === term ? "#fff" : "#22262d", color: t === term ? "var(--ink)" : "#fff" }} onClick={() => setTerm(t)}>{t} meses</button>)}</div>
             <select className="sel" value={bank || ""} onChange={(e) => setBank(e.target.value)} style={{ background: "#22262d", color: "#fff", border: 0 }}>{(d.banks || []).map((b) => <option key={b.name} value={b.name}>{b.name} · {b.rate}% anual</option>)}</select>
-            <span style={{ fontSize: 11.5, opacity: 0.6 }}>Cálculo referencial, sujeto a aprobación del banco.</span>
-          </section>
-        )}
-
-        {(version.specs || []).length > 0 && (
-          <section style={{ padding: "0 20px 18px" }}>
-            <details><summary style={{ fontWeight: 800, cursor: "pointer" }}>Ficha técnica completa</summary>
-              {(version.specs || []).map((g) => <div key={g.t} style={{ marginTop: 10 }}><div className="label">{g.t}</div>{g.rows.map(([k, v]) => <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderBottom: "1px solid var(--line)" }}>{v == null ? <span>✓ {k}</span> : <><span className="muted">{k}</span><b style={{ textAlign: "right" }}>{v}</b></>}</div>)}</div>)}
-            </details>
+            <span style={{ fontSize: 11.5, opacity: 0.6 }}>Cálculo referencial sujeto a cambios y aprobación bancaria.{calc.trade ? " Avalúo del vehículo usado sujeto a evaluación y confirmación final." : ""}</span>
           </section>
         )}
 

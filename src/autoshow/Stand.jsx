@@ -97,7 +97,7 @@ export function ModelSheet({ m, onClose, onQuote, onCapture }) {
         </div>
         <div className="as-sheet-right">
           <div className="as-pricebox">
-            <span className="as-label">{m.price_from ? "Precio desde" : "Precio"} · IVA incluido</span>
+            <span className="as-label">{m.price_from ? "Precio desde" : "Precio"} · {/h[íi]brid/i.test(m.powertrain || "") ? "Exento de IVA" : "IVA incluido"}</span>
             <div className="as-bigprice">{priceTxt(m)}</div>
             {m.currency === "USD" && <span className="as-muted">≈ {fmtQ(m.price * fx)}</span>}
             {b > 0 && <div className="as-bonoline">🎁 {data.settings?.event?.bono_label || "Bono Autoshow"}: <b>− {fmtQ(b)}</b></div>}
