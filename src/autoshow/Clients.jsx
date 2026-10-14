@@ -82,6 +82,13 @@ export function LeadSheet({ id, onClose, onQuote }) {
       </div>
       <div className="as-sheet-body">
         <div className="as-sheet-left" style={{ gap: 14 }}>
+          <details className="as-card pad as-hist">
+            <summary><span className="as-label">Historial · {acts.length}</span>{acts[0] && <span className="as-muted">{acts[0].detail || acts[0].type} · {ago(acts[0].created_at || acts[0].at)}</span>}</summary>
+            <div style={{ display: "flex", gap: 8 }}><input className="as-inp" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Agregar nota…" /><button className="as-btn as-ghost" disabled={!note.trim()} onClick={() => { logActivity(lead.id, "nota", note.trim()); setNote(""); }}>Guardar</button></div>
+            <div className="as-timeline">
+              {acts.map((a) => <div key={a.id}><i className={a.type.startsWith("cliente_") ? "hot" : a.type === "whatsapp" ? "wa" : ""} /><span>{a.detail || a.type}</span><small>{ago(a.created_at || a.at)}</small></div>)}
+            </div>
+          </details>
           <div className="as-card pad">
             <span className="as-label">Temperatura</span>
             <div className="as-temps sm">{Object.entries(TEMPS).map(([k, t]) => <button key={k} className={`as-temp ${t.cls} ${lead.temperature === k ? "on" : ""}`} onClick={() => set({ temperature: k })}><b>{t.emoji}</b><span>{t.short}</span></button>)}</div>
@@ -130,13 +137,6 @@ export function LeadSheet({ id, onClose, onQuote }) {
             <div className="as-chips">
               <span className="as-muted">Reprogramar:</span>
               {[["Mañana", 1], ["3 días", 3], ["1 semana", 7], ["2 semanas", 14]].map(([l, d]) => <button key={l} className="as-chip" onClick={() => { set({ next_action_at: nextMorning(d) }); toast("Seguimiento reprogramado", l); }}>{l}</button>)}
-            </div>
-          </div>
-          <div className="as-card pad">
-            <span className="as-label">Historial</span>
-            <div style={{ display: "flex", gap: 8 }}><input className="as-inp" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Agregar nota…" /><button className="as-btn as-ghost" disabled={!note.trim()} onClick={() => { logActivity(lead.id, "nota", note.trim()); setNote(""); }}>Guardar</button></div>
-            <div className="as-timeline">
-              {acts.map((a) => <div key={a.id}><i className={a.type.startsWith("cliente_") ? "hot" : a.type === "whatsapp" ? "wa" : ""} /><span>{a.detail || a.type}</span><small>{ago(a.created_at || a.at)}</small></div>)}
             </div>
           </div>
         </div>
