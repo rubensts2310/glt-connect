@@ -268,3 +268,10 @@ textarea.as-inp{resize:vertical;line-height:1.45}
   .as-seller{padding:14px 8px;font-size:14px}
   .as-gate-card{padding:22px 18px}
 }
+/* historial colapsable en la ficha del cliente */
+.as-hist summary{display:flex;flex-direction:column;gap:2px;cursor:pointer;list-style:none;position:relative;padding-right:28px}
+.as-hist summary::-webkit-details-marker{display:none}
+.as-hist summary::after{content:"▾";position:absolute;right:0;top:0;font-size:18px;color:var(--as-ink3);transition:transform .15s}
+.as-hist[open] summary::after{transform:rotate(180deg)}
+.as-hist summary .as-muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.as-hist:not([open]){gap:0}
