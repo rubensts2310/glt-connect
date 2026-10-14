@@ -42,7 +42,7 @@ export default function Capture({ model, lead: existing, mode = "full", onClose,
       <div className="as-sheet-body single">
         {step === "cliente" && <ClientForm c={c} up={up} models={data.models} err={err} onSave={() => saveClient(false)} onQuote={() => saveClient(true)} />}
         {step === "cotizar" && <QuoteForm lead={c} initialModel={data.models.find((m) => m.id === (model?.id || c.model_id))} onBack={existing ? onClose : () => setStep("cliente")}
-          onSave={(q) => { saveQuote(q); setQuote(q); setStep("compartir"); }} />}
+          onSave={(q) => { saveQuote(q); if (q.model_id !== c.model_id) setC(saveLead({ ...c, model_id: q.model_id })); setQuote(q); setStep("compartir"); }} />}
         {step === "compartir" && quote && <Share lead={c} quote={quote} onNew={() => { onClose(); }} onOpenLead={() => onOpenLead?.(c.id)} logActivity={logActivity} me={me} />}
         {step === "listo" && (
           <div className="as-done">
