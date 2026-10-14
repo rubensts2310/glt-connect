@@ -77,7 +77,7 @@ function ClientForm({ c, up, models, err, onSave, onQuote }) {
       <div className="as-form-grid">
         <div className="as-field"><span>Forma de pago</span><div className="as-seg">{PAGOS.map(([k, l]) => <button key={k} className={c.pago === k ? "on" : ""} onClick={() => up("pago", c.pago === k ? null : k)}>{l}</button>)}</div></div>
         <div className="as-field"><span>¿Cuándo compraría?</span><div className="as-seg">{PLAZOS.map(([k, l]) => <button key={k} className={c.plazo === k ? "on" : ""} onClick={() => up("plazo", c.plazo === k ? null : k)}>{l}</button>)}</div></div>
-        {c.pago === "credito" && <label className="as-field"><span>Enganche disponible (Q)</span><input className="as-inp" value={c.enganche_q || ""} onChange={(e) => up("enganche_q", e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="50000" /></label>}
+        {c.pago === "credito" && <label className="as-field"><span>Enganche Tentativo Disponible (Q)</span><input className="as-inp" value={c.enganche_q || ""} onChange={(e) => up("enganche_q", e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="50000" /></label>}
         <div className="as-field"><span>¿Da un vehículo como parte de pago?</span>
           <div style={{ display: "flex", gap: 8 }}>
             <div className="as-seg">{[[true, "Sí"], [false, "No"]].map(([k, l]) => <button key={l} className={c.parte_pago === k ? "on" : ""} onClick={() => up("parte_pago", c.parte_pago === k ? null : k)}>{l}</button>)}</div>
@@ -148,7 +148,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
       <div className="as-quote-right">
         <div className="as-form-grid">
           <label className="as-field"><span>{ev.bono_label || "Bono Autoshow"} (Q)</span><input className="as-inp" inputMode="numeric" value={bonus || ""} onChange={(e) => setBonus(Number(e.target.value.replace(/\D/g, "")) || 0)} placeholder="0" /></label>
-          <div className="as-field"><span>Parte de pago</span>
+          <div className="as-field"><span>Usado – Parte de pago</span>
             <div style={{ display: "flex", gap: 6 }}><div className="as-seg"><button className={tradeOn ? "on" : ""} onClick={() => setTradeOn(true)}>Sí</button><button className={!tradeOn ? "on" : ""} onClick={() => setTradeOn(false)}>No</button></div>
               {tradeOn && <input className="as-inp" style={{ width: 130 }} inputMode="numeric" value={trade.value} onChange={(e) => setTrade({ ...trade, value: e.target.value.replace(/\D/g, "") })} placeholder="Valor Q" />}</div>
             {tradeOn && <input className="as-inp" style={{ marginTop: 6 }} value={trade.desc} onChange={(e) => setTrade({ ...trade, desc: e.target.value })} placeholder="Marca, modelo, año" />}
@@ -173,7 +173,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
             {tradeOn && Number(trade.value) > 0 && <div className="good"><span>Parte de pago</span><b>− {fmtQ(trade.value)}</b></div>}
           </div>
           <div className="as-total-big"><div><span>Total</span><b>{fmtQ(q.total)}</b></div>{!contado && <div><span>Cuota estimada</span><b>{fmtQ(q.monthly)}<small>/mes</small></b></div>}</div>
-          {!contado && <span className="as-fine">Enganche {fmtQ(q.eng)} · {term} meses · {bank} {rate}% anual · cálculo referencial sujeto a aprobación del banco.</span>}
+          {!contado && <span className="as-fine">Enganche {fmtQ(q.eng)} · {term} meses · {bank} {rate}% anual · cálculo referencial sujeto a cambios y aprobación bancaria.</span>}
         </div>
         <div className="as-actions">
           <button className="as-btn as-ghost as-lg" onClick={onBack}>← Atrás</button>
