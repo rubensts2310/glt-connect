@@ -215,7 +215,7 @@ textarea.as-inp{resize:vertical;line-height:1.45}
 .as-toast.bad{background:var(--as-bad)}
 /* teléfonos y tablets en vertical */
 @media (max-width:900px){
-  .as-sheet-body,.as-quote,.as-two,.as-share{grid-template-columns:1fr}
+  .as-sheet-body,.as-quote,.as-two,.as-share{grid-template-columns:minmax(0,1fr)}
   .as-kpis{grid-template-columns:1fr 1fr}
   .as-top{flex-wrap:wrap}
   .as-tabs{order:3;width:100%;margin:0}
@@ -231,4 +231,40 @@ textarea.as-inp{resize:vertical;line-height:1.45}
   .as-bigprice{font-size:32px}
   .as-sheet-head{flex-wrap:wrap}
   .as-lrow{flex-wrap:wrap}
+}
+/* teléfonos: barra compacta, encabezados de hoja en dos filas y botones a todo el ancho */
+@media (max-width:600px){
+  .as-top{gap:8px 10px;padding:8px 12px}
+  .as-brand{flex:1 1 0}
+  .as-brand>div{min-width:0}
+  .as-brand img{width:30px;height:30px}
+  .as-brand b{font-size:14px;overflow:hidden;text-overflow:ellipsis}
+  .as-brand span{display:none}
+  .as-sync{padding:7px 10px;font-size:12px}
+  .as-who{padding:3px 10px 3px 3px}
+  .as-who .as-av{width:30px;height:30px;font-size:12px}
+  .as-tabs button{flex:1 0 auto;font-size:14px;padding:9px 12px}
+  .as-sheet-head{gap:8px 10px;padding:10px 12px}
+  .as-sheet-head .as-btn{min-height:42px;padding:8px 14px;font-size:15px}
+  .as-sheet-title b{font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-sheet-head>:last-child:not(.as-sheet-title):not(.as-net){flex:1 1 100%;display:flex;gap:8px}
+  .as-sheet-head>:last-child:not(.as-sheet-title):not(.as-net)>.as-btn,.as-sheet-head>.as-btn:last-child{flex:1}
+  .as-form{padding:16px;gap:16px}
+  .as-quote-left,.as-quote-right{padding:16px}
+  .as-form .as-seg,.as-quote .as-seg{display:flex;align-self:stretch}
+  .as-form .as-seg button,.as-quote .as-seg button{flex:1 1 auto;padding:10px 8px}
+  .as-form .as-actions>.as-btn,.as-quote .as-actions>.as-btn{flex:1 1 100%}
+  .as-total-big{flex-wrap:wrap}
+  .as-total-big b{font-size:26px}
+  .as-lmain{flex:1 1 100%}
+  .as-share{padding:18px;gap:16px}
+  .as-share-qr{max-width:none}
+  .as-share-side h2{font-size:24px}
+  .as-done{padding:26px 18px}
+  .as-kpi b{font-size:30px}
+  .as-table{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .as-tr{min-width:560px}
+  .as-sellers{grid-template-columns:1fr 1fr}
+  .as-seller{padding:14px 8px;font-size:14px}
+  .as-gate-card{padding:22px 18px}
 }
