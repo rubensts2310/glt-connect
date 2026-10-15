@@ -42,7 +42,15 @@ export default function Capture({ model, lead: existing, mode = "full", onClose,
       <div className="as-sheet-body single">
         {step === "cliente" && <ClientForm c={c} up={up} models={data.models} err={err} onSave={() => saveClient(false)} onQuote={() => saveClient(true)} />}
         {step === "cotizar" && <QuoteForm lead={c} initialModel={data.models.find((m) => m.id === (model?.id || c.model_id))} onBack={existing ? onClose : () => setStep("cliente")}
-          onSave={(q) => { saveQuote(q); if (q.model_id !== c.model_id) setC(saveLead({ ...c, model_id: q.model_id })); setQuote(q); setStep("compartir"); }} />}
+          onSave={(q, { pago }) => {
+            saveQuote(q);
+            // el cliente queda con el modelo y la forma de pago de su última cotización
+            const patch = {};
+            if (q.model_id !== c.model_id) patch.model_id = q.model_id;
+            if (pago && pago !== c.pago) patch.pago = pago;
+            if (Object.keys(patch).length) setC(saveLead({ ...c, ...patch }));
+            setQuote(q); setStep("compartir");
+          }} />}
         {step === "compartir" && quote && <Share lead={c} quote={quote} onNew={() => { onClose(); }} onOpenLead={() => onOpenLead?.(c.id)} logActivity={logActivity} me={me} />}
         {step === "listo" && (
           <div className="as-done">
@@ -113,7 +121,8 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
   const [term, setTerm] = useState(60);
   const rate = TASA_ANUAL;
   const q = useMemo(() => calcQuote({ model, fx, bonus, trade: tradeOn ? Number(trade.value) || 0 : 0, enganche: eng, term, rate }), [model, fx, bonus, tradeOn, trade, eng, term, rate]);
-  const contado = lead.pago === "contado";
+  const [pago, setPago] = useState(lead.pago || null);
+  const contado = pago === "contado";
   const setModel = (id) => { setMid(id); setCi(0); setIi(0); setBonus(bonusFor(data.settings, id)); };
   const valid = new Date(Date.now() + (Number(ev.validez_dias) || 15) * 864e5).toISOString().slice(0, 10);
   const save = () => onSave({
@@ -122,7 +131,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
     accessories: [], trade_in: tradeOn && trade.desc ? { desc: trade.desc, value: Number(trade.value) || 0 } : null,
     enganche_q: contado ? q.total : q.eng, term_months: contado ? null : term, bank: null, rate: contado ? null : rate,
     monthly: contado ? null : Math.round(q.monthly), total: Math.round(q.total), valid_until: valid,
-  });
+  }, { pago });
   if (!model) return null;
   return (
     <div className="as-quote">
@@ -140,6 +149,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
         </div>}
       </div>
       <div className="as-quote-right">
+        <div className="as-field"><span>Forma de pago</span><div className="as-seg">{PAGOS.map(([k, l]) => <button key={k} className={pago === k ? "on" : ""} onClick={() => setPago(k)}>{l}</button>)}</div></div>
         <div className="as-form-grid">
           <label className="as-field"><span>{ev.bono_label || "Bono Autoshow"} (Q)</span><input className="as-inp" inputMode="numeric" value={bonus || ""} onChange={(e) => setBonus(Number(e.target.value.replace(/\D/g, "")) || 0)} placeholder="0" /></label>
           <div className="as-field"><span>Usado – Parte de pago</span>
