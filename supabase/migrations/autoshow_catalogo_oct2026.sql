@@ -28,7 +28,7 @@ with cat(id, sort, in_show, name, version, price, currency, colors, interiors) a
    '[{"name":"Negro","hex":"#17191B","img":"x50_black_hero","angles":["side","rear"]},
      {"name":"Blanco","hex":"#F2F3F4","img":"x50_white_hero","angles":["side","rear"]}]',
    '[{"name":"Cuero Negro","hex":"#1A1A1A"}]'),
-  ('t1h', 2, true, 'T1 Híbrido iMD', 'i-DM enchufable', 259900, 'GTQ',
+  ('t1h', 2, true, 'T1 Híbrido iDM', 'i-DM enchufable', 259900, 'GTQ',
    '[{"name":"Dorado","hex":"#B39A6B","img":null,"ref":"t1c_khaki_hero","angles":["side","rear"]},
      {"name":"Negro","hex":"#17191B","img":"t1c_black_hero","angles":["side","rear"]},
      {"name":"Negro Mate","hex":"#2B2D2F","img":null,"ref":"t1c_black_hero","angles":["side","rear"]},
