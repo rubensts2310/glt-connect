@@ -27,11 +27,8 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
-    if (!b.preview) {
-      const now = new Date().toISOString();
-      await db.from("as_quotes").update({ open_count: (q.open_count || 0) + 1, first_opened_at: q.first_opened_at || now, last_opened_at: now }).eq("id", q.id);
-      if (!q.first_opened_at) await db.from("as_activities").insert({ lead_id: q.lead_id, type: "cliente_abrio", detail: "El cliente abrió su cotización" });
-    }
+    // suma atómica en la base: aperturas simultáneas no se pisan y el aviso de primera apertura sale una sola vez
+    if (!b.preview) await db.rpc("as_quote_open", { p_id: q.id });
     const [{ data: model }, { data: seller }, { data: st }] = await Promise.all([
       db.from("as_models").select("id,name,version,price,currency,price_from,powertrain,tagline,highlights,specs,colors,versions,media,warranty").eq("id", q.model_id).single(),
       db.from("as_sellers").select("name,phone,showroom,photo").eq("id", q.seller_id).maybeSingle(),
