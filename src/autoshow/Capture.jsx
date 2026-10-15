@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { calcQuote, quoteLink, TEMPS, useAS, uuid, waLink } from "./store";
 import { asset } from "../lib/supabase";
-import { fmtQ, rateInput } from "../lib/format";
+import { fmtQ, TASA_ANUAL } from "../lib/format";
 import { QR } from "../components/bits";
 import { bonusFor, colorPhoto, modelPhoto, priceTxt } from "./Stand";
 
@@ -99,7 +99,6 @@ function ClientForm({ c, up, models, err, onSave, onQuote }) {
 export function QuoteForm({ lead, initialModel, onBack, onSave }) {
   const { data, fx } = useAS();
   const ev = data.settings?.event || {};
-  const banks = data.settings?.banks || [{ name: "Banco Industrial", rate: 9.5 }];
   const [mid, setMid] = useState(initialModel?.id || data.models[0]?.id);
   const model = data.models.find((m) => m.id === mid);
   const colors = model?.colors || [];
@@ -112,8 +111,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
   const [trade, setTrade] = useState({ desc: lead.parte_pago_desc || "", value: "" });
   const [eng, setEng] = useState(() => Number(lead.enganche_q) || 0);
   const [term, setTerm] = useState(60);
-  const [rateTxt, setRateTxt] = useState(() => rateInput(banks[0]?.rate ?? 9.5));
-  const rate = Number(rateTxt) || 0;
+  const rate = TASA_ANUAL;
   const q = useMemo(() => calcQuote({ model, fx, bonus, trade: tradeOn ? Number(trade.value) || 0 : 0, enganche: eng, term, rate }), [model, fx, bonus, tradeOn, trade, eng, term, rate]);
   const contado = lead.pago === "contado";
   const setModel = (id) => { setMid(id); setCi(0); setIi(0); setBonus(bonusFor(data.settings, id)); };
@@ -156,8 +154,8 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
               <input type="range" className="as-range" min={0} max={Math.max(5000, Math.round((q.total * 0.7) / 5000) * 5000)} step={5000} value={Math.min(eng, q.total)} onChange={(e) => setEng(Number(e.target.value))} />
             </div>
             <div className="as-form-grid">
-              <div className="as-field"><span>Plazo</span><div className="as-seg">{[24, 36, 48, 60, 72].map((t) => <button key={t} className={term === t ? "on" : ""} onClick={() => setTerm(t)}>{t}m</button>)}</div></div>
-              <label className="as-field"><span>Tasa de interés anual (%)</span><input className="as-inp" inputMode="decimal" value={rateTxt} onChange={(e) => setRateTxt(rateInput(e.target.value))} placeholder="5.9" /></label>
+              <div className="as-field"><span>Plazo</span><div className="as-seg">{[24, 36, 48, 60, 72, 84].map((t) => <button key={t} className={term === t ? "on" : ""} onClick={() => setTerm(t)}>{t}m</button>)}</div></div>
+              <div className="as-field"><span>Tasa de interés anual</span><b style={{ fontSize: 20, padding: "8px 0" }}>{rate}% fija</b></div>
             </div>
           </>
         )}
