@@ -148,8 +148,7 @@ export default function PublicASQuote() {
             <label style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span>Enganche</span><b>{fmtQ(engC)} ({calc.total ? Math.round((engC / calc.total) * 100) : 0}%)</b></label>
             <input type="range" min={0} max={Math.round((calc.total * 0.7) / 5000) * 5000} step={5000} value={engC} onChange={(e) => setEng(Number(e.target.value))} aria-label="Enganche" />
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{[36, 48, 60, 72, 84].map((t) => <button key={t} className="btn sm" style={{ background: t === term ? "#fff" : "#22262d", color: t === term ? "var(--ink)" : "#fff" }} onClick={() => setTerm(t)}>{t} meses</button>)}</div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span>Tasa de interés anual</span><b>{rate}% fija</b></div>
-            <span style={{ fontSize: 11.5, opacity: 0.6 }}>Cálculo referencial sujeto a cambios y aprobación bancaria.{calc.trade ? " Avalúo del vehículo usado sujeto a evaluación y confirmación final." : ""}</span>
+            <span style={{ fontSize: 11.5, opacity: 0.6 }}>Cuota calculada con tasa de interés de {rate}% anual. Cálculo referencial sujeto a cambios y aprobación bancaria.{calc.trade ? " Avalúo del vehículo usado sujeto a evaluación y confirmación final." : ""}</span>
           </section>
         )}
 

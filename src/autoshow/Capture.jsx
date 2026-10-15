@@ -154,9 +154,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
               <input type="range" className="as-range" min={0} max={Math.max(5000, Math.round((q.total * 0.7) / 5000) * 5000)} step={5000} value={Math.min(eng, q.total)} onChange={(e) => setEng(Number(e.target.value))} />
             </div>
             <div className="as-form-grid">
-              <div className="as-field"><span>Plazo</span><div className="as-seg">{[24, 36, 48, 60, 72, 84].map((t) => <button key={t} className={term === t ? "on" : ""} onClick={() => setTerm(t)}>{t}m</button>)}</div></div>
-              <div className="as-field"><span>Tasa de interés anual</span><b style={{ fontSize: 20, padding: "8px 0" }}>{rate}% fija</b></div>
-            </div>
+              <div className="as-field"><span>Plazo</span><div className="as-seg">{[24, 36, 48, 60, 72, 84].map((t) => <button key={t} className={term === t ? "on" : ""} onClick={() => setTerm(t)}>{t}m</button>)}</div></div>            </div>
           </>
         )}
         <div className="as-total">
