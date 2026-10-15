@@ -15,12 +15,16 @@ const LS = {
 export const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => { const r = (Math.random() * 16) | 0; return (c === "x" ? r : (r & 3) | 8).toString(16); }));
 
 export class ApiError extends Error { constructor(status, msg) { super(msg); this.status = status; } }
-export async function api(action, body = {}) {
-  let r;
+// cada solicitud tiene tiempo límite: una respuesta colgada no debe frenar la sincronización
+export async function api(action, body = {}, timeout = 30000) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), timeout);
+  let r, d;
   try {
-    r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY }, body: JSON.stringify({ action, ...body }) });
-  } catch { throw new ApiError(0, "Sin conexión"); }
-  const d = await r.json().catch(() => ({}));
+    r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY }, body: JSON.stringify({ action, ...body }), signal: ctl.signal });
+    d = await r.json().catch(() => ({}));
+  } catch { throw ctl.signal.aborted ? new ApiError(408, "El servidor tardó demasiado") : new ApiError(0, "Sin conexión"); }
+  finally { clearTimeout(t); }
   if (!r.ok) throw new ApiError(r.status, d.error || `Error ${r.status}`);
   return d;
 }
@@ -144,7 +148,7 @@ export function AutoshowProvider({ children }) {
     try {
       // leads primero para que las cotizaciones encuentren a su cliente
       const order = { lead: 0, quote: 1, activity: 2 };
-      const batch = [...mine].sort((a, b) => order[a.type] - order[b.type] || a.ts - b.ts).slice(0, 60);
+      const batch = [...mine].sort((a, b) => order[a.type] - order[b.type] || a.ts - b.ts).slice(0, 15);
       const r = await api("sync", { session: sRef.current, ops: batch.map((o) => ({ id: o.id, type: o.type, data: o.data })) });
       const done = new Set(), failed = [];
       for (const x of r.results || []) {
@@ -156,11 +160,14 @@ export function AutoshowProvider({ children }) {
       if (failed.length) { setErrors((e) => [...failed, ...e].slice(0, 20)); toast("No se pudo guardar un cambio", failed[0], "bad"); }
       setOnline(true);
       if (done.size) await refresh();
+      // cola grande (tablet que estuvo sin señal): sigue con el siguiente grupo sin esperar al ciclo de 8 s
+      if (done.size && qRef.current.some((o) => o.seller === meRef.current?.id)) setTimeout(() => flushRef.current(), 300);
     } catch (e) {
       if (e.status === 401) signOut(true);
       if (e.status === 0) setOnline(false);
     } finally { busy.current = false; setSyncing(false); }
   }, [refresh, signOut, toast]);
+  const flushRef = useRef(flush); flushRef.current = flush;
 
   const enqueue = useCallback((type, payload) => {
     const op = { id: uuid(), type, data: payload, seller: meRef.current?.id, ts: Date.now() };

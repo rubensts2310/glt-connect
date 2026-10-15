@@ -218,7 +218,10 @@ Deno.serve(async (req) => {
     if (a === "sync") {
       const ops = Array.isArray(b.ops) ? b.ops.slice(0, 200) : [];
       const results: any[] = [];
+      const t0 = Date.now();
       for (const op of ops) {
+        // presupuesto de tiempo: lo que no alcance vuelve como pendiente y la tablet lo reenvía, sin llegar al límite de la plataforma
+        if (Date.now() - t0 > 20000) { results.push({ id: op.id, ok: false, retry: true, error: "pendiente" }); continue; }
         try {
           if (op.type === "lead") await upsertLead(ses, op.data);
           else if (op.type === "quote") await upsertQuote(ses, op.data);
