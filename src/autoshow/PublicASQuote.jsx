@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { asset, assetFile, SUPABASE_KEY, SUPABASE_URL } from "../lib/supabase";
-import { cuota, fmtQ, fmtUSD, initials } from "../lib/format";
+import { cuota, fmtQ, fmtUSD, initials, rateInput } from "../lib/format";
 import { sellerPhoto } from "./Avatar";
 import { Loading } from "../components/bits";
 import { AngleViewer, Pano360, VideoReel } from "../components/Media";
@@ -24,7 +24,7 @@ export default function PublicASQuote() {
   const [state, setState] = useState("loading");
   const [eng, setEng] = useState(0);
   const [term, setTerm] = useState(60);
-  const [bank, setBank] = useState(null);
+  const [rateTxt, setRateTxt] = useState("");
   const [pi, setPi] = useState(0);
   const [picker, setPicker] = useState(false);
   const [slot, setSlot] = useState(null);
@@ -35,7 +35,7 @@ export default function PublicASQuote() {
     document.title = "Su cotización Jetour";
     let t;
     const load = () => call({ token, preview: sp.get("preview") === "1" })
-      .then((r) => { setD(r); setState("ok"); setEng(Number(r.quote.enganche_q) || 0); setTerm(r.quote.term_months || 60); setBank(r.quote.bank || r.banks?.[0]?.name); })
+      .then((r) => { setD(r); setState("ok"); setEng(Number(r.quote.enganche_q) || 0); setTerm(r.quote.term_months || 60); setRateTxt(rateInput(r.quote.rate ?? (r.banks || []).find((b) => b.name === r.quote.bank)?.rate ?? r.banks?.[0]?.rate ?? 9.5)); })
       .catch((e) => { if (e.status === 404 && e.message === "pending" && tries.current++ < 40) { setState("pending"); t = setTimeout(load, 5000); } else setState("error"); });
     load();
     return () => clearTimeout(t);
@@ -64,7 +64,7 @@ export default function PublicASQuote() {
   const color = qc?.img ? qc : { ...qc, img: qc?.ref || q.color_img, name: q.color };
   const videos = (m.media || []).filter((x) => x.type === "video");
   const panos = (m.media || []).filter((x) => x.type === "pano");
-  const rate = (d.banks || []).find((b) => b.name === bank)?.rate ?? Number(q.rate) ?? 9.5;
+  const rate = Number(rateTxt) || 0;
   const engC = Math.min(eng, calc.total);
   const monthly = cuota(Math.max(0, calc.total - engC), rate, term);
   const version = (m.versions || []).find((v) => (/h[íi]brid/i.test(m.powertrain || "") ? /h[íi]brid/i.test(v.name) : !/h[íi]brid/i.test(v.name))) || { specs: m.specs, hl: m.highlights };
@@ -149,7 +149,9 @@ export default function PublicASQuote() {
             <label style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span>Enganche</span><b>{fmtQ(engC)} ({calc.total ? Math.round((engC / calc.total) * 100) : 0}%)</b></label>
             <input type="range" min={0} max={Math.round((calc.total * 0.7) / 5000) * 5000} step={5000} value={engC} onChange={(e) => setEng(Number(e.target.value))} aria-label="Enganche" />
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{[36, 48, 60, 72].map((t) => <button key={t} className="btn sm" style={{ background: t === term ? "#fff" : "#22262d", color: t === term ? "var(--ink)" : "#fff" }} onClick={() => setTerm(t)}>{t} meses</button>)}</div>
-            <select className="sel" value={bank || ""} onChange={(e) => setBank(e.target.value)} style={{ background: "#22262d", color: "#fff", border: 0 }}>{(d.banks || []).map((b) => <option key={b.name} value={b.name}>{b.name} · {b.rate}% anual</option>)}</select>
+            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, fontSize: 13 }}><span>Tasa de interés anual</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}><input className="inp" inputMode="decimal" value={rateTxt} onChange={(e) => setRateTxt(rateInput(e.target.value))} placeholder="5.9" aria-label="Tasa de interés anual" style={{ width: 80, textAlign: "right", background: "#22262d", color: "#fff", border: 0 }} /><b>%</b></span>
+            </label>
             <span style={{ fontSize: 11.5, opacity: 0.6 }}>Cálculo referencial sujeto a cambios y aprobación bancaria.{calc.trade ? " Avalúo del vehículo usado sujeto a evaluación y confirmación final." : ""}</span>
           </section>
         )}
