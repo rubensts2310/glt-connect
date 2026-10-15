@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { calcQuote, quoteLink, TEMPS, useAS, uuid, waLink } from "./store";
 import { asset } from "../lib/supabase";
-import { fmtQ } from "../lib/format";
+import { fmtQ, rateInput } from "../lib/format";
 import { QR } from "../components/bits";
 import { bonusFor, colorPhoto, modelPhoto, priceTxt } from "./Stand";
 
@@ -112,8 +112,8 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
   const [trade, setTrade] = useState({ desc: lead.parte_pago_desc || "", value: "" });
   const [eng, setEng] = useState(() => Number(lead.enganche_q) || 0);
   const [term, setTerm] = useState(60);
-  const [bank, setBank] = useState(banks[0]?.name);
-  const rate = banks.find((b) => b.name === bank)?.rate ?? 9.5;
+  const [rateTxt, setRateTxt] = useState(() => rateInput(banks[0]?.rate ?? 9.5));
+  const rate = Number(rateTxt) || 0;
   const q = useMemo(() => calcQuote({ model, fx, bonus, trade: tradeOn ? Number(trade.value) || 0 : 0, enganche: eng, term, rate }), [model, fx, bonus, tradeOn, trade, eng, term, rate]);
   const contado = lead.pago === "contado";
   const setModel = (id) => { setMid(id); setCi(0); setIi(0); setBonus(bonusFor(data.settings, id)); };
@@ -122,7 +122,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
     id: uuid(), public_token: uuid(), lead_id: lead.id, model_id: model.id, color: colors[ci]?.name, color_img: photo?.img, interior: interiors[ii]?.name || null,
     price: model.price, currency: model.currency, bonus_label: bonus ? ev.bono_label || "Bono Autoshow" : null, bonus_amount: Number(bonus) || 0,
     accessories: [], trade_in: tradeOn && trade.desc ? { desc: trade.desc, value: Number(trade.value) || 0 } : null,
-    enganche_q: contado ? q.total : q.eng, term_months: contado ? null : term, bank: contado ? null : bank, rate: contado ? null : rate,
+    enganche_q: contado ? q.total : q.eng, term_months: contado ? null : term, bank: null, rate: contado ? null : rate,
     monthly: contado ? null : Math.round(q.monthly), total: Math.round(q.total), valid_until: valid,
   });
   if (!model) return null;
@@ -157,7 +157,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
             </div>
             <div className="as-form-grid">
               <div className="as-field"><span>Plazo</span><div className="as-seg">{[24, 36, 48, 60, 72].map((t) => <button key={t} className={term === t ? "on" : ""} onClick={() => setTerm(t)}>{t}m</button>)}</div></div>
-              <label className="as-field"><span>Banco</span><select className="as-inp" value={bank} onChange={(e) => setBank(e.target.value)}>{banks.map((b) => <option key={b.name} value={b.name}>{b.name} · {b.rate}%</option>)}</select></label>
+              <label className="as-field"><span>Tasa de interés anual (%)</span><input className="as-inp" inputMode="decimal" value={rateTxt} onChange={(e) => setRateTxt(rateInput(e.target.value))} placeholder="5.9" /></label>
             </div>
           </>
         )}
@@ -168,7 +168,7 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
             {tradeOn && Number(trade.value) > 0 && <div className="good"><span>Parte de pago</span><b>− {fmtQ(trade.value)}</b></div>}
           </div>
           <div className="as-total-big"><div><span>Total</span><b>{fmtQ(q.total)}</b></div>{!contado && <div><span>Cuota estimada</span><b>{fmtQ(q.monthly)}<small>/mes</small></b></div>}</div>
-          {!contado && <span className="as-fine">Enganche {fmtQ(q.eng)} · {term} meses · {bank} {rate}% anual · cálculo referencial sujeto a cambios y aprobación bancaria.</span>}
+          {!contado && <span className="as-fine">Enganche {fmtQ(q.eng)} · {term} meses · tasa {rate}% anual · cálculo referencial sujeto a cambios y aprobación bancaria.</span>}
         </div>
         <div className="as-actions">
           <button className="as-btn as-ghost as-lg" onClick={onBack}>← Atrás</button>
