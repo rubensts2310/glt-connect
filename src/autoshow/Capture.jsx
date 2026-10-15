@@ -41,7 +41,7 @@ export default function Capture({ model, lead: existing, mode = "full", onClose,
       </div>
       <div className="as-sheet-body single">
         {step === "cliente" && <ClientForm c={c} up={up} models={data.models} err={err} onSave={() => saveClient(false)} onQuote={() => saveClient(true)} />}
-        {step === "cotizar" && <QuoteForm lead={c} initialModel={data.models.find((m) => m.id === (model?.id || c.model_id))} onBack={existing ? onClose : () => setStep("cliente")}
+        {step === "cotizar" && <QuoteForm lead={c} initialModel={data.models.find((m) => m.id === (c.model_id || model?.id))} onBack={existing ? onClose : () => setStep("cliente")}
           onSave={(q, { pago }) => {
             saveQuote(q);
             // el cliente queda con el modelo y la forma de pago de su última cotización
