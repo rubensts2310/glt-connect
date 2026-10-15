@@ -52,6 +52,6 @@ export function cuota(principal, ratePct, months) {
   if (!r) return principal / months;
   return (principal * r) / (1 - Math.pow(1 + r, -months));
 }
-// Tasa escrita a mano: solo dígitos y un punto decimal (acepta coma), p. ej. "5.9"
-export const rateInput = (v) => String(v ?? "").replace(/,/g, ".").replace(/[^\d.]/g, "").replace(/^(\d{0,2}(?:\.\d{0,2})?).*$/, "$1");
+// Tasa de interés anual fija para todas las cotizaciones (no editable)
+export const TASA_ANUAL = 10;
 export const initials =(n = "") => n.split(" ").filter(Boolean).slice(0, 2).map((x) => x[0]).join("").toUpperCase();
