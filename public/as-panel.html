@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Panel Autoshow · GLT Connect</title>
+<link rel="icon" href="/as-icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1014;--card:#161b22;--card2:#1d232c;--line:#283039;--ink:#f3f5f7;--ink2:#aab2bd;--ink3:#6c7580;--blue:#00AEEF;--navy:#0A3A7A;--hot:#ff5a36;--warm:#f0a020;--cold:#4fb6e8;--good:#2fd18f;--bad:#ff6b5e;--mono:"JetBrains Mono",monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font-family:inherit}
+.hide{display:none!important}
+/* gate */
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gate form{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:32px 28px;text-align:center}
+.gate img{width:56px;height:56px;border-radius:16px;background:#fff;padding:6px}
+.gate h1{font-size:20px;margin:18px 0 4px}
+.gate p{color:var(--ink3);font-size:14px;margin:0 0 22px}
+.pin{width:100%;font:700 34px/1 var(--mono);letter-spacing:.4em;text-align:center;background:#0d1014;border:1px solid var(--line);color:#fff;border-radius:16px;padding:18px 0 18px .4em;outline:none}
+.pin:focus{border-color:var(--blue)}
+.gate button{margin-top:14px;width:100%;border:0;border-radius:16px;padding:16px;font-weight:800;font-size:16px;background:var(--blue);color:#001;cursor:pointer}
+.err{color:var(--bad);font-size:13px;min-height:18px;margin-top:10px}
+/* app */
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;padding:12px 20px;background:rgba(13,16,20,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top img{width:34px;height:34px;border-radius:10px;background:#fff;padding:4px}
+.top b{display:block;font-size:15px}.top span{font-size:12px;color:var(--ink3)}
+.live{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);font-family:var(--mono)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--good);animation:p 1.4s infinite}
+.live.off i{background:var(--bad);animation:none}
+@keyframes p{50%{opacity:.25}}
+.top .out{border:0;background:transparent;color:var(--ink3);font-size:12px;cursor:pointer}
+.wrap{padding:18px 20px 60px;max-width:1500px;margin:0 auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi small{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.kpi b{display:block;font-size:34px;line-height:1.1;margin-top:8px;font-weight:800;letter-spacing:-.02em}
+.kpi em{display:block;font-style:normal;font-size:12px;color:var(--ink2);margin-top:4px}
+.kpi.money b{font-size:24px;margin-top:14px}
+.kpi.hot b{color:var(--hot)}.kpi.good b{color:var(--good)}.kpi.warn b{color:var(--warm)}.kpi.blue b{color:var(--blue)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin-top:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.card h3{margin:0 0 12px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);display:flex;align-items:center;gap:8px}
+.card h3 span{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink2);font-size:12px}
+.c6{grid-column:span 6}.c4{grid-column:span 4}.c8{grid-column:span 8}.c12{grid-column:span 12}.c3{grid-column:span 3}
+@media(max-width:1000px){.c6,.c4,.c8,.c3{grid-column:span 12}}
+svg text{font-family:"Plus Jakarta Sans",sans-serif}
+/* bars */
+.hbar{display:grid;grid-template-columns:150px 1fr 40px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+.hbar .n{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar .t{height:12px;background:var(--card2);border-radius:6px;overflow:hidden;display:flex}
+.hbar .t i{display:block;height:100%;background:var(--blue)}
+.hbar .t i.q{background:var(--navy)}
+.hbar .v{text-align:right;font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.legend{display:flex;gap:14px;font-size:11px;color:var(--ink3);margin-top:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:800;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.num{font-family:var(--mono);text-align:right}th.num{text-align:right}
+tr.zero td{color:var(--ink3)}
+.av{display:inline-flex;align-items:center;gap:10px}.av img,.av span.i{width:30px;height:30px;border-radius:50%;object-fit:cover;background:var(--card2);display:inline-grid;place-items:center;font-size:12px;font-weight:800;color:var(--ink2)}
+.pill{display:inline-block;border-radius:99px;padding:3px 9px;font-size:11px;font-weight:800}
+.pill.hot{background:rgba(255,90,54,.18);color:#ffb3a3}.pill.warm{background:rgba(240,160,32,.18);color:#ffdc9a}.pill.cold{background:rgba(79,182,232,.18);color:#bfe7fa}.pill.bad{background:rgba(255,107,94,.18);color:#ffc9c3}
+/* feed */
+.feed{display:flex;flex-direction:column;gap:0;max-height:560px;overflow:auto}
+.ev{display:grid;grid-template-columns:52px 10px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.ev time{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.ev i{width:10px;height:10px;border-radius:50%;background:var(--ink3);margin-top:4px}
+.ev.captura i{background:var(--blue)}.ev.cotizacion i{background:var(--navy)}.ev.whatsapp_stand i,.ev.whatsapp i{background:#1faa59}.ev.cliente_abrio i{background:var(--warm)}.ev.cliente_llamar i,.ev.cliente_test_drive i,.ev.cliente_quiero_este i,.ev.cliente_whatsapp i{background:var(--hot)}
+.ev b{font-weight:700}.ev small{color:var(--ink2)}
+.donuts{display:flex;gap:18px;justify-content:space-around;flex-wrap:wrap}
+.donut{text-align:center;font-size:12px;color:var(--ink2)}
+.foot{margin-top:18px;font-size:11px;color:var(--ink3);font-family:var(--mono)}
+</style>
+</head>
+<body>
+<section class="gate" id="gate">
+  <form id="gateForm">
+    <img src="/as-icon-192.png" alt="">
+    <h1>Panel en vivo</h1>
+    <p>Autoshow · Jetour · Grupo Los Tres</p>
+    <input class="pin" id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="••••••" autofocus>
+    <button type="submit">Entrar</button>
+    <div class="err" id="gateErr"></div>
+  </form>
+</section>
+
+<section id="app" class="hide">
+  <header class="top">
+    <img src="/as-icon-192.png" alt="">
+    <div><b id="evName">Autoshow</b><span id="evStand"></span></div>
+    <div class="live" id="live"><i></i><span id="liveTxt">conectando</span></div>
+    <button class="out" id="out">salir</button>
+  </header>
+  <main class="wrap">
+    <div class="kpis" id="kpis"></div>
+    <div class="grid">
+      <div class="card c8"><h3>Ritmo de hoy <span id="hoyTxt"></span></h3><div id="hourChart"></div><div class="legend"><span><i style="background:var(--blue)"></i>Leads</span><span><i style="background:var(--navy)"></i>Cotizaciones</span></div></div>
+      <div class="card c4"><h3>Calidad del lead</h3><div class="donuts" id="donuts"></div></div>
+      <div class="card c6"><h3>Interés por modelo <span>leads · cotizaciones</span></h3><div id="models"></div></div>
+      <div class="card c6"><h3>Embudo <span id="embTxt"></span></h3><div id="funnel"></div><div style="margin-top:14px" id="dias"></div></div>
+      <div class="card c8"><h3>Asesores <span>ordenados por leads</span></h3><div style="overflow:auto"><table id="sellers"></table></div></div>
+      <div class="card c4"><h3>En vivo</h3><div class="feed" id="feed"></div></div>
+      <div class="card c12"><h3>Seguimientos vencidos <span id="vencTxt"></span></h3><div style="overflow:auto"><table id="venc"></table></div></div>
+    </div>
+    <div class="foot" id="foot"></div>
+  </main>
+</section>
+
+<script>
+const API="https://sqcsjcdtahptpxwczoyy.supabase.co/functions/v1/autoshow-panel";
+const KEY="sb_publishable_7k7XlZVRJEw5XYUuk2hzCA_LiEtF9QJ";
+const ASSETS="https://sqcsjcdtahptpxwczoyy.supabase.co/storage/v1/object/public/assets/";
+const $=(s)=>document.querySelector(s);
+const esc=(s)=>String(s??"").replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const q=(n)=>"Q"+Math.round(n||0).toLocaleString("es-GT");
+const GT="America/Guatemala";
+const hhmm=(t)=>new Date(t).toLocaleTimeString("es-GT",{timeZone:GT,hour:"2-digit",minute:"2-digit",hour12:false});
+const fecha=(t)=>new Date(t).toLocaleDateString("es-GT",{timeZone:GT,weekday:"short",day:"numeric",month:"short"});
+let session=null; try{session=localStorage.getItem("as_panel_session")}catch{}
+async function call(body){
+  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json",apikey:KEY},body:JSON.stringify(body)});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw Object.assign(new Error(d.error||"Error "+r.status),{status:r.status});
+  return d;
+}
+$("#gateForm").addEventListener("submit",async(e)=>{
+  e.preventDefault(); $("#gateErr").textContent="";
+  try{ const d=await call({action:"login",pin:$("#pin").value}); session=d.session; try{localStorage.setItem("as_panel_session",session)}catch{}; start(); }
+  catch(err){ $("#gateErr").textContent=err.message; $("#pin").value=""; $("#pin").focus(); }
+});
+$("#out").addEventListener("click",()=>{ session=null; try{localStorage.removeItem("as_panel_session")}catch{}; location.reload(); });
+
+let timer=null;
+function start(){ $("#gate").classList.add("hide"); $("#app").classList.remove("hide"); tick(); timer=setInterval(tick,20000); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) tick(); }); }
+async function tick(){
+  try{ const d=await call({action:"stats",session}); render(d); $("#live").classList.remove("off"); $("#liveTxt").textContent="en vivo · "+hhmm(d.generated_at); }
+  catch(err){ if(err.status===401){ clearInterval(timer); $("#out").click(); return; } $("#live").classList.add("off"); $("#liveTxt").textContent="sin conexión"; }
+}
+
+const TEMP={caliente:["Caliente","hot"],tibio:["Tibio","warm"],frio:["Frío","cold"]};
+const STAGE={nuevo:"Nuevo",contactado:"Contactado",test_drive:"Test drive",negociacion:"Negociación",ganado:"Ganado",perdido:"Perdido"};
+const PAGO={contado:"Contado",credito:"Crédito",no_sabe:"No sabe",sin_dato:"Sin dato"};
+const TYPE={captura:"Lead capturado",cotizacion:"Cotización",whatsapp_stand:"Cotización enviada por WhatsApp",whatsapp:"Seguimiento por WhatsApp",llamada:"Llamada",cliente_abrio:"Cliente abrió la cotización",cliente_llamar:"Cliente pide que lo llamen",cliente_test_drive:"Cliente pide test drive",cliente_quiero_este:"Cliente: “quiero este”",cliente_whatsapp:"Cliente escribió por WhatsApp",respondio:"Cliente respondió",etapa:"Cambio de etapa",reasignado:"Reasignado"};
+
+function render(d){
+  const k=d.kpis, ev=d.event||{};
+  $("#evName").textContent=ev.name||"Autoshow"; $("#evStand").textContent=ev.stand||"";
+  const abiertasPct=k.quotes_total?Math.round(100*k.quotes_abiertas/k.quotes_total):0;
+  $("#kpis").innerHTML=[
+    ["Leads hoy",k.leads_hoy,`${k.leads_ultima_hora} en la última hora`,"blue"],
+    ["Leads totales",k.leads_total,`${k.vendedores_activos_hoy} asesores activos hoy`,""],
+    ["Cotizaciones hoy",k.quotes_hoy,`${k.quotes_total} en total`,""],
+    ["Abiertas por el cliente",abiertasPct+"%",`${k.quotes_abiertas} de ${k.quotes_total} · ${k.opens_total} aperturas`,"good"],
+    ["Leads calientes",k.calientes,`${k.cliente_acciones} acciones del cliente`,"hot"],
+    ["Seguimientos vencidos",k.followups_vencidos,`${k.sin_contactar} sin contactar`,k.followups_vencidos?"warn":"good"],
+    ["Valor cotizado",q(k.valor_cotizado),`${k.test_drives} test drives · ${k.ganados} ganados`,"money"],
+  ].map(([t,v,e,c])=>`<div class="kpi ${c}"><small>${t}</small><b>${v}</b><em>${e}</em></div>`).join("");
+
+  // ritmo por hora (svg)
+  const H=d.por_hora_hoy, max=Math.max(1,...H.map(x=>Math.max(x.leads,x.quotes)));
+  const W=720,HT=170,pad=28,bw=(W-pad*2)/H.length;
+  let s=`<svg viewBox="0 0 ${W} ${HT+24}" width="100%" style="display:block">`;
+  [0,.5,1].forEach(f=>{const y=pad+ (HT-pad)*(1-f); s+=`<line x1="${pad}" x2="${W-pad}" y1="${y}" y2="${y}" stroke="#283039" stroke-dasharray="2 4"/><text x="${pad-6}" y="${y+4}" font-size="10" fill="#6c7580" text-anchor="end">${Math.round(max*f)}</text>`;});
+  H.forEach((x,i)=>{ const x0=pad+i*bw+bw*0.15, w=bw*0.32;
+    const hl=(HT-pad)*x.leads/max, hq=(HT-pad)*x.quotes/max;
+    s+=`<rect x="${x0}" y="${HT-hl}" width="${w}" height="${hl}" rx="4" fill="#00AEEF"/><rect x="${x0+w+3}" y="${HT-hq}" width="${w}" height="${hq}" rx="4" fill="#0A3A7A"/>`;
+    if(x.leads) s+=`<text x="${x0+w/2}" y="${HT-hl-4}" font-size="11" font-weight="700" fill="#f3f5f7" text-anchor="middle">${x.leads}</text>`;
+    s+=`<text x="${x0+w+1.5}" y="${HT+16}" font-size="11" fill="#aab2bd" text-anchor="middle">${x.h}h</text>`; });
+  $("#hourChart").innerHTML=s+"</svg>";
+  $("#hoyTxt").textContent=`${k.leads_hoy} leads · ${k.quotes_hoy} cotizaciones`;
+
+  // donuts
+  const donut=(title,parts)=>{ const tot=parts.reduce((a,p)=>a+p.n,0)||1; let off=0, r=34, c=2*Math.PI*r, g="";
+    parts.forEach(p=>{ const len=c*p.n/tot; g+=`<circle r="${r}" cx="50" cy="50" fill="none" stroke="${p.color}" stroke-width="12" stroke-dasharray="${len} ${c-len}" stroke-dashoffset="${-off}" transform="rotate(-90 50 50)"/>`; off+=len; });
+    return `<div class="donut"><svg viewBox="0 0 100 100" width="110"><circle r="${r}" cx="50" cy="50" fill="none" stroke="#1d232c" stroke-width="12"/>${g}<text x="50" y="55" text-anchor="middle" font-size="18" font-weight="800" fill="#f3f5f7">${tot}</text></svg><div style="font-weight:800;color:#f3f5f7;margin:4px 0">${title}</div>${parts.map(p=>`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${p.color};margin-right:5px"></i>${p.label} <b>${p.n}</b></div>`).join("")}</div>`; };
+  const tmap=Object.fromEntries(d.por_temperatura.map(x=>[x.k,x.n])), pmap=Object.fromEntries(d.por_pago.map(x=>[x.k,x.n]));
+  $("#donuts").innerHTML=donut("Temperatura",[{label:"Caliente",n:tmap.caliente||0,color:"#ff5a36"},{label:"Tibio",n:tmap.tibio||0,color:"#f0a020"},{label:"Frío",n:tmap.frio||0,color:"#4fb6e8"}])
+    +donut("Forma de pago",[{label:"Contado",n:pmap.contado||0,color:"#2fd18f"},{label:"Crédito",n:pmap.credito||0,color:"#00AEEF"},{label:"Sin dato",n:(pmap.no_sabe||0)+(pmap.sin_dato||0),color:"#6c7580"}]);
+
+  // modelos
+  const mm=Math.max(1,...d.por_modelo.map(x=>Math.max(x.leads,x.quotes)));
+  $("#models").innerHTML=d.por_modelo.map(x=>`<div class="hbar"><span class="n">${esc(x.modelo)}</span><div style="display:flex;flex-direction:column;gap:3px"><div class="t"><i style="width:${100*x.leads/mm}%"></i></div><div class="t"><i class="q" style="width:${100*x.quotes/mm}%"></i></div></div><span class="v">${x.leads}·${x.quotes}</span></div>`).join("");
+
+  // embudo
+  const em=Object.fromEntries(d.embudo.map(x=>[x.k,x.n])), order=["nuevo","contactado","test_drive","negociacion","ganado","perdido"], emax=Math.max(1,...order.map(o=>em[o]||0));
+  $("#funnel").innerHTML=order.map(o=>`<div class="hbar"><span class="n">${STAGE[o]}</span><div class="t"><i style="width:${100*(em[o]||0)/emax}%;background:${o==="ganado"?"#2fd18f":o==="perdido"?"#ff6b5e":"#00AEEF"}"></i></div><span class="v">${em[o]||0}</span></div>`).join("");
+  $("#embTxt").textContent=`${k.sin_contactar} de ${k.leads_total} siguen en “nuevo”`;
+  const dmax=Math.max(1,...d.por_dia.map(x=>x.leads));
+  $("#dias").innerHTML=`<h3 style="margin:16px 0 8px">Leads por día</h3>`+d.por_dia.map(x=>`<div class="hbar"><span class="n">${fecha(x.d+"T12:00:00")}</span><div class="t"><i style="width:${100*x.leads/dmax}%;background:#0A3A7A"></i></div><span class="v">${x.leads}</span></div>`).join("");
+
+  // asesores
+  const ini=(n)=>n.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase();
+  $("#sellers").innerHTML=`<tr><th>Asesor</th><th class="num">Hoy</th><th class="num">Leads</th><th class="num">Cotiz.</th><th class="num">Abiertas</th><th class="num">🔥</th><th class="num">Vencidos</th></tr>`+
+    d.vendedores.map(v=>`<tr class="${v.leads?"":"zero"}"><td><span class="av">${v.photo?`<img src="${ASSETS+esc(v.photo)}" alt="">`:`<span class="i">${ini(v.name)}</span>`}<span>${esc(v.name)}${v.role==="gerente"?' <span class="pill cold">gerente</span>':""}</span></span></td><td class="num">${v.hoy}</td><td class="num"><b>${v.leads}</b></td><td class="num">${v.quotes}</td><td class="num">${v.abiertas}</td><td class="num">${v.calientes}</td><td class="num">${v.vencidos?`<span class="pill bad">${v.vencidos}</span>`:"—"}</td></tr>`).join("");
+
+  // feed
+  $("#feed").innerHTML=d.feed.map(a=>`<div class="ev ${a.type}"><time>${hhmm(a.t)}</time><i></i><div><b>${TYPE[a.type]||esc(a.type)}</b> ${a.cliente?`· ${esc(a.cliente)}`:""}<br><small>${esc(a.detail||"")}${a.vendedor?` — ${esc(a.vendedor)}`:""}</small></div></div>`).join("")||`<div class="ev"><small>Sin actividad todavía</small></div>`;
+
+  // vencidos
+  $("#vencTxt").textContent=d.vencidos.length?`${d.vencidos.length} clientes esperan contacto`:"todo al día";
+  $("#venc").innerHTML=d.vencidos.length?`<tr><th>Cliente</th><th>Teléfono</th><th>Modelo</th><th>Temp.</th><th>Etapa</th><th>Asesor</th><th>Debió contactarse</th></tr>`+
+    d.vencidos.map(v=>{const t=TEMP[v.temperature]||["",""]; return `<tr><td><b>${esc(v.name)}</b></td><td class="num">${esc(v.phone||"")}</td><td>${esc(v.modelo||"")}</td><td><span class="pill ${t[1]}">${t[0]}</span></td><td>${STAGE[v.stage]||esc(v.stage)}</td><td>${esc(v.vendedor)}</td><td>${fecha(v.next_action_at)} ${hhmm(v.next_action_at)}</td></tr>`;}).join(""):"";
+
+  $("#foot").textContent=`Datos directos de GLT Connect · se actualiza cada 20 s · ${new Date(d.generated_at).toLocaleString("es-GT",{timeZone:GT})}`;
+}
+if(session) start();
+</script>
+</body>
+</html>

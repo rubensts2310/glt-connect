@@ -1,4 +1,5 @@
 { "rewrites": [
+  { "source": "/panel", "destination": "/as-panel.html" },
   { "source": "/autoshow/c/:token", "destination": "/api/cotizacion?token=:token" },
   { "source": "/((?!api/).*)", "destination": "/index.html" }
 ] }
