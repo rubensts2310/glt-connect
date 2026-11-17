@@ -1,6 +1,6 @@
 {
-  "name": "GLT Connect · Autoshow",
-  "short_name": "GLT Autoshow",
+  "name": "GLT Connect · Jetour",
+  "short_name": "GLT Jetour",
   "start_url": "/autoshow",
   "scope": "/",
   "display": "standalone",

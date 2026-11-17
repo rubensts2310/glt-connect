@@ -79,7 +79,7 @@ export default function PublicASQuote() {
         <section style={{ background: "#0d1014", color: "#fff", padding: "18px 20px 0" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <img src={assetFile("jetour_logo_light.png")} alt="Jetour" style={{ height: 15 }} />
-            <span style={{ fontSize: 11.5, opacity: 0.7, letterSpacing: ".08em", textTransform: "uppercase", fontWeight: 600 }}>{d.event?.name || "Autoshow"} · {first || "Su cotización"}</span>
+            <span style={{ fontSize: 11.5, opacity: 0.7, letterSpacing: ".08em", textTransform: "uppercase", fontWeight: 600 }}>{d.event?.name || "Jetour"} · {first || "Su cotización"}</span>
           </div>
           <h1 style={{ fontSize: 46, marginTop: 18, lineHeight: 1, ...fade(0) }}>{m.name}</h1>
           <p style={{ margin: "8px 0 0", opacity: 0.75, ...fade(1) }}>{m.tagline}</p>
@@ -95,7 +95,7 @@ export default function PublicASQuote() {
         {q.bonus_amount > 0 && (
           <section style={{ padding: "14px 20px 0" }}>
             <div style={{ background: "linear-gradient(90deg,#ff2d6f,#ff5a36)", color: "#fff", borderRadius: 18, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-              <div><div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", opacity: 0.85 }}>{q.bonus_label || "Bono Autoshow"}</div><div style={{ fontSize: 30, fontWeight: 800 }}>− {fmtQ(q.bonus_amount)}</div></div>
+              <div><div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", opacity: 0.85 }}>{q.bonus_label || "Bono especial"}</div><div style={{ fontSize: 30, fontWeight: 800 }}>− {fmtQ(q.bonus_amount)}</div></div>
               <span style={{ fontSize: 34 }}>🎁</span>
             </div>
           </section>
@@ -133,7 +133,7 @@ export default function PublicASQuote() {
           <h2>Su inversión</h2>
           {[["Precio de lista", q.currency === "USD" ? `${fmtUSD(q.price)} (≈ ${fmtQ(calc.list)})` : fmtQ(calc.list)],
             ...(q.accessories || []).map((a) => [a.name, `+ ${fmtQ(a.price)}`]),
-            ...(q.bonus_amount ? [[q.bonus_label || "Bono Autoshow", `− ${fmtQ(q.bonus_amount)}`]] : []),
+            ...(q.bonus_amount ? [[q.bonus_label || "Bono especial", `− ${fmtQ(q.bonus_amount)}`]] : []),
             ...(calc.trade ? [[`Su vehículo: ${q.trade_in.desc}`, `− ${fmtQ(calc.trade)}`]] : [])].map(([k, v], i) =>
             <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 14 }}><span className="muted">{k}</span><b className="num" style={{ color: v.startsWith("−") ? "var(--good)" : undefined }}>{v}</b></div>)}
           <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}><b>Total</b><b style={{ fontSize: 30 }}><CountUp value={calc.total} fmt={fmtQ} /></b></div>

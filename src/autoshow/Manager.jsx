@@ -31,7 +31,7 @@ export default function Manager({ onOpenSeller }) {
     try {
       const r = await manager("export");
       const blob = new Blob([r.csv], { type: "text/csv;charset=utf-8" });
-      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `autoshow-leads-${today}.csv`; a.click();
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `leads-jetour-${today}.csv`; a.click();
     } catch (e) { toast("No se pudo exportar", e.message, "bad"); }
   };
   return (
@@ -110,24 +110,37 @@ function Sellers({ sellers, manager, toast, refresh }) {
   );
 }
 
+/** Lista inicial de accesorios (#4092): los que pidió el cliente; la gerencia pone precios y agrega o quita */
+const ACC_DEFAULT = [{ name: "Alfombras" }, { name: "Polarizado" }, { name: "Cargador" }, { name: "Escalera" }];
+
 function EventCfg({ data, manager, toast, refresh }) {
   const ev = data.settings?.event || {};
-  const [f, setF] = useState({ name: ev.name || "", stand: ev.stand || "", bono_label: ev.bono_label || "Bono Autoshow", bono_q: ev.bono_q || 0, validez_dias: ev.validez_dias || 15, bono_por_modelo: { ...(ev.bono_por_modelo || {}) } });
+  const [acc, setAcc] = useState(() => (ev.accesorios?.length ? ev.accesorios : ACC_DEFAULT).map((a) => ({ name: a.name, price: a.price ?? "" })));
+  const [f, setF] = useState({ name: ev.name || "", stand: ev.stand || "", bono_label: ev.bono_label || "Bono especial", bono_q: ev.bono_q || 0, validez_dias: ev.validez_dias || 15, bono_por_modelo: { ...(ev.bono_por_modelo || {}) } });
   const [code, setCode] = useState("");
   const save = async () => {
-    try { await manager("settings_save", { event: { ...f, bono_q: Number(f.bono_q) || 0, validez_dias: Number(f.validez_dias) || 15 }, activation_code: code || undefined }); toast("Evento actualizado"); setCode(""); refresh(); } catch (e) { toast("No se guardó", e.message, "bad"); }
+    try { await manager("settings_save", { event: { ...f, bono_q: Number(f.bono_q) || 0, validez_dias: Number(f.validez_dias) || 15, accesorios: acc.filter((a) => a.name.trim()).map((a) => ({ name: a.name.trim(), price: Number(a.price) || 0 })).slice(0, 12) }, activation_code: code || undefined }); toast("Evento actualizado"); setCode(""); refresh(); } catch (e) { toast("No se guardó", e.message, "bad"); }
   };
   return (
     <div className="as-two">
       <div className="as-card pad">
         <span className="as-label">Evento</span>
-        <label className="as-field"><span>Nombre del evento (aparece en mensajes y cotizaciones)</span><input className="as-inp" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></label>
+        <label className="as-field"><span>Nombre del evento o lugar: sala de ventas, feria, activación (aparece en mensajes y cotizaciones)</span><input className="as-inp" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></label>
         <label className="as-field"><span>Stand</span><input className="as-inp" value={f.stand} onChange={(e) => setF({ ...f, stand: e.target.value })} /></label>
         <div className="as-form-grid">
           <label className="as-field"><span>Nombre del bono</span><input className="as-inp" value={f.bono_label} onChange={(e) => setF({ ...f, bono_label: e.target.value })} /></label>
           <label className="as-field"><span>Bono general (Q)</span><input className="as-inp" inputMode="numeric" value={f.bono_q} onChange={(e) => setF({ ...f, bono_q: e.target.value.replace(/\D/g, "") })} /></label>
           <label className="as-field"><span>Vigencia de la cotización (días)</span><input className="as-inp" inputMode="numeric" value={f.validez_dias} onChange={(e) => setF({ ...f, validez_dias: e.target.value.replace(/\D/g, "") })} /></label>
         </div>
+        <span className="as-label">Accesorios para cotizar (suman al total)</span>
+        {acc.map((a, i) => (
+          <div key={i} className="as-kv">
+            <input className="as-inp" value={a.name} placeholder="Accesorio" aria-label="Accesorio" onChange={(e) => setAcc(acc.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+            <input className="as-inp" style={{ width: 120 }} inputMode="numeric" value={a.price} placeholder="Precio Q" aria-label={`Precio de ${a.name || "accesorio"}`} onChange={(e) => setAcc(acc.map((x, j) => (j === i ? { ...x, price: e.target.value.replace(/\D/g, "") } : x)))} />
+            <button className="as-btn as-ghost" aria-label="Quitar accesorio" onClick={() => setAcc(acc.filter((_, j) => j !== i))}>✕</button>
+          </div>
+        ))}
+        {acc.length < 12 && <button className="as-btn as-ghost" onClick={() => setAcc([...acc, { name: "", price: "" }])}>+ Agregar accesorio</button>}
         <span className="as-label">Código para activar tablets</span>
         <input className="as-inp as-code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Nuevo código (dejar vacío para no cambiar)" />
         <div className="as-actions">
