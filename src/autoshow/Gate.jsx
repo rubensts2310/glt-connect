@@ -19,7 +19,7 @@ export function Activate() {
     <div className="as-gate">
       <form className="as-gate-card" onSubmit={go}>
         <img src={assetFile("glt_icon.png")} alt="" style={{ width: 64 }} />
-        <h1>GLT Connect · Autoshow</h1>
+        <h1>GLT Connect · Jetour</h1>
         <p className="as-muted">Active esta tablet con el código del evento que le dio su gerente. Solo se hace una vez.</p>
         <label className="as-field"><span>Código del evento</span>
           <input className="as-inp as-code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} autoCapitalize="characters" autoComplete="off" placeholder="XXXXXXXX" required />

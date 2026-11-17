@@ -120,15 +120,20 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
   const [eng, setEng] = useState(() => Number(lead.enganche_q) || 0);
   const [term, setTerm] = useState(60);
   const rate = TASA_ANUAL;
-  const q = useMemo(() => calcQuote({ model, fx, bonus, trade: tradeOn ? Number(trade.value) || 0 : 0, enganche: eng, term, rate }), [model, fx, bonus, tradeOn, trade, eng, term, rate]);
+  // Accesorios (#4092): los de la lista de la gerencia y otros que escriba el vendedor; cada uno con precio, suman al total
+  const accList = ev.accesorios || [];
+  const [accOn, setAccOn] = useState([]);   // nombres marcados de la lista
+  const [accExtra, setAccExtra] = useState([]);   // [{name, price}] escritos aquí
+  const accessories = [...accList.filter((a) => accOn.includes(a.name)), ...accExtra.filter((a) => a.name.trim()).map((a) => ({ name: a.name.trim(), price: Number(a.price) || 0 }))].slice(0, 12);
+  const q = useMemo(() => calcQuote({ model, fx, bonus, accessories, trade: tradeOn ? Number(trade.value) || 0 : 0, enganche: eng, term, rate }), [model, fx, bonus, accessories, tradeOn, trade, eng, term, rate]);
   const [pago, setPago] = useState(lead.pago || null);
   const contado = pago === "contado";
   const setModel = (id) => { setMid(id); setCi(0); setIi(0); setBonus(bonusFor(data.settings, id)); };
   const valid = new Date(Date.now() + (Number(ev.validez_dias) || 15) * 864e5).toISOString().slice(0, 10);
   const save = () => onSave({
     id: uuid(), public_token: uuid(), lead_id: lead.id, model_id: model.id, color: colors[ci]?.name, color_img: photo?.img, interior: interiors[ii]?.name || null,
-    price: model.price, currency: model.currency, bonus_label: bonus ? ev.bono_label || "Bono Autoshow" : null, bonus_amount: Number(bonus) || 0,
-    accessories: [], trade_in: tradeOn && trade.desc ? { desc: trade.desc, value: Number(trade.value) || 0 } : null,
+    price: model.price, currency: model.currency, bonus_label: bonus ? ev.bono_label || "Bono especial" : null, bonus_amount: Number(bonus) || 0,
+    accessories, trade_in: tradeOn && trade.desc ? { desc: trade.desc, value: Number(trade.value) || 0 } : null,
     enganche_q: contado ? q.total : q.eng, term_months: contado ? null : term, bank: null, rate: contado ? null : rate,
     monthly: contado ? null : Math.round(q.monthly), total: Math.round(q.total), valid_until: valid,
   }, { pago });
@@ -151,12 +156,23 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
       <div className="as-quote-right">
         <div className="as-field"><span>Forma de pago</span><div className="as-seg">{PAGOS.map(([k, l]) => <button key={k} className={pago === k ? "on" : ""} onClick={() => setPago(k)}>{l}</button>)}</div></div>
         <div className="as-form-grid">
-          <label className="as-field"><span>{ev.bono_label || "Bono Autoshow"} (Q)</span><input className="as-inp" inputMode="numeric" value={bonus || ""} onChange={(e) => setBonus(Number(e.target.value.replace(/\D/g, "")) || 0)} placeholder="0" /></label>
+          <label className="as-field"><span>{ev.bono_label || "Bono especial"} (Q)</span><input className="as-inp" inputMode="numeric" value={bonus || ""} onChange={(e) => setBonus(Number(e.target.value.replace(/\D/g, "")) || 0)} placeholder="0" /></label>
           <div className="as-field"><span>Usado – Parte de pago</span>
             <div style={{ display: "flex", gap: 6 }}><div className="as-seg"><button className={tradeOn ? "on" : ""} onClick={() => setTradeOn(true)}>Sí</button><button className={!tradeOn ? "on" : ""} onClick={() => setTradeOn(false)}>No</button></div>
               {tradeOn && <input className="as-inp" style={{ width: 130 }} inputMode="numeric" value={trade.value} onChange={(e) => setTrade({ ...trade, value: e.target.value.replace(/\D/g, "") })} placeholder="Valor Q" />}</div>
             {tradeOn && <input className="as-inp" style={{ marginTop: 6 }} value={trade.desc} onChange={(e) => setTrade({ ...trade, desc: e.target.value })} placeholder="Marca, modelo, año" />}
           </div>
+        </div>
+        <div className="as-field"><span>Accesorios incluidos · suman al total</span>
+          {accList.length > 0 && <div className="as-seg" style={{ flexWrap: "wrap" }}>{accList.map((a) => { const on = accOn.includes(a.name); return <button key={a.name} className={on ? "on" : ""} onClick={() => setAccOn(on ? accOn.filter((x) => x !== a.name) : [...accOn, a.name])}>{a.name}{a.price ? ` · ${fmtQ(a.price)}` : ""}</button>; })}</div>}
+          {accExtra.map((a, i) => (
+            <div key={i} style={{ display: "flex", gap: 6, marginTop: 6 }}>
+              <input className="as-inp" value={a.name} placeholder="Otro accesorio" aria-label="Otro accesorio" onChange={(e) => setAccExtra(accExtra.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+              <input className="as-inp" style={{ width: 120 }} inputMode="numeric" value={a.price} placeholder="Precio Q" aria-label="Precio" onChange={(e) => setAccExtra(accExtra.map((x, j) => (j === i ? { ...x, price: e.target.value.replace(/\D/g, "") } : x)))} />
+              <button className="as-btn as-ghost" aria-label="Quitar" onClick={() => setAccExtra(accExtra.filter((_, j) => j !== i))}>✕</button>
+            </div>
+          ))}
+          {accessories.length < 12 && <button className="as-btn as-ghost" style={{ marginTop: 6, alignSelf: "flex-start" }} onClick={() => setAccExtra([...accExtra, { name: "", price: "" }])}>+ Otro accesorio</button>}
         </div>
         {!contado && (
           <>
@@ -170,7 +186,8 @@ export function QuoteForm({ lead, initialModel, onBack, onSave }) {
         <div className="as-total">
           <div className="as-total-rows">
             <div><span>Precio{model.currency === "USD" ? ` (${priceTxt(model)})` : ""}</span><b>{fmtQ(q.base)}</b></div>
-            {bonus > 0 && <div className="good"><span>{ev.bono_label || "Bono Autoshow"}</span><b>− {fmtQ(bonus)}</b></div>}
+            {accessories.map((a, i) => <div key={i}><span>{a.name}</span><b>+ {fmtQ(a.price)}</b></div>)}
+            {bonus > 0 && <div className="good"><span>{ev.bono_label || "Bono especial"}</span><b>− {fmtQ(bonus)}</b></div>}
             {tradeOn && Number(trade.value) > 0 && <div className="good"><span>Parte de pago</span><b>− {fmtQ(trade.value)}</b></div>}
           </div>
           <div className="as-total-big"><div><span>Total</span><b>{fmtQ(q.total)}</b></div>{!contado && <div><span>Cuota estimada</span><b>{fmtQ(q.monthly)}<small>/mes</small></b></div>}</div>
@@ -190,7 +207,7 @@ function Share({ lead, quote, onNew, onOpenLead, logActivity, me }) {
   const link = quoteLink(quote.public_token);
   const m = data.models.find((x) => x.id === quote.model_id);
   const first = (lead.name || "").split(" ")[0];
-  const text = `¡Hola ${first}! Soy ${me?.name || "su asesor"}, su asesor de Jetour. Aquí está su cotización de la ${m?.name} ${quote.color || ""} con el ${data.settings?.event?.bono_label || "bono del autoshow"}: ${link}
+  const text = `¡Hola ${first}! Soy ${me?.name || "su asesor"}, su asesor de Jetour. Aquí está su cotización de la ${m?.name} ${quote.color || ""} con el ${data.settings?.event?.bono_label || "bono especial"}: ${link}
 
 Cualquier duda, le atiendo por aquí.`;
   const wa = waLink(lead.phone, text);

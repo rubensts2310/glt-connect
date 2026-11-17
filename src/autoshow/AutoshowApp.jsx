@@ -12,7 +12,7 @@ import { Avatar } from "./Avatar";
 
 function useInstallable() {
   useEffect(() => {
-    document.title = "GLT Autoshow";
+    document.title = "GLT Jetour";
     if (!document.querySelector('link[rel="manifest"]')) {
       const l = document.createElement("link"); l.rel = "manifest"; l.href = "/autoshow.webmanifest"; document.head.appendChild(l);
     }
@@ -48,7 +48,7 @@ function Shell() {
   return (
     <div className="as-app">
       <header className="as-top">
-        <div className="as-brand"><img src={assetFile("glt_icon.png")} alt="" /><div><b>{data.settings?.event?.name || "Autoshow"}</b><span>{data.settings?.event?.stand || "Jetour"}</span></div></div>
+        <div className="as-brand"><img src={assetFile("glt_icon.png")} alt="" /><div><b>{data.settings?.event?.name || "Jetour"}</b><span>{data.settings?.event?.stand || "Jetour"}</span></div></div>
         <nav className="as-tabs">{TABS.map(([k, l]) => <button key={k} className={tab === k ? "on" : ""} onClick={() => { setTab(k); if (k !== "clientes") setSellerFilter(""); }}>{l}</button>)}</nav>
         <div className="as-me">
           <button className={`as-sync ${!online ? "off" : pending ? "pend" : ""}`} onClick={() => flush()} title={lastSync ? `Última sincronización ${new Date(lastSync).toLocaleTimeString("es-GT")}` : ""}>

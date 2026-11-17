@@ -65,7 +65,7 @@ export function followMessage({ lead, step, quote, me, event }) {
   const n = (lead.name || "").split(" ")[0] || "";
   const m = lead._modelName || "su próximo Jetour";
   const yo = (me?.name || "").split(" ")[0] || "su asesor";
-  const ev = event?.name || "el autoshow";
+  const ev = event?.name || "Jetour";
   const link = quote ? quoteLink(quote.public_token) : null;
   const vig = quote?.valid_until ? new Date(quote.valid_until + "T12:00:00").toLocaleDateString("es-GT", { day: "numeric", month: "long" }) : null;
   if (step === 0) {
@@ -73,7 +73,7 @@ export function followMessage({ lead, step, quote, me, event }) {
     if (lead.temperature === "tibio") return `¡Hola ${n}! Soy ${yo}, de Jetour. Gracias por visitarnos en ${ev}. ${link ? `¿Pudo revisar su cotización de la ${m}? ${link} ` : `Quedo pendiente de compartirle la información de la ${m}. `}Con gusto le resuelvo cualquier duda.`;
     return `¡Hola ${n}! Soy ${yo}, de Jetour. Gracias por pasar por nuestro stand en ${ev}. ${link ? `Le comparto la información de la ${m}: ${link} ` : ""}Cuando guste, aquí estoy para ayudarle.`;
   }
-  if (step === 1) return `Hola ${n}, ¿cómo está? Le escribe ${yo} de Jetour. ${vig ? `El bono del autoshow para la ${m} sigue vigente hasta el ${vig}.` : `Sigo a la orden con la ${m}.`} ¿Le gustaría venir a manejarla?`;
+  if (step === 1) return `Hola ${n}, ¿cómo está? Le escribe ${yo} de Jetour. ${vig ? `El ${event?.bono_label || "bono especial"} para la ${m} sigue vigente hasta el ${vig}.` : `Sigo a la orden con la ${m}.`} ¿Le gustaría venir a manejarla?`;
   if (step === 2) return `Hola ${n}, le escribe ${yo} de Jetour. Puedo apartarle la ${m} en el color que le gustó. ¿Le llamo hoy para darle los detalles?`;
   return `Hola ${n}, no quiero molestarle 🙂 Si en algún momento retoma la idea de su próximo Jetour, aquí estoy para ayudarle. ¡Que tenga excelente día! — ${yo}, Jetour`;
 }
