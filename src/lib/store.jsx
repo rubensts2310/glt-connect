@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { ensureDemoSession, sb } from "./supabase";
+import { sb } from "./supabase";
 
 const Ctx = createContext(null);
 export const useStore = () => useContext(Ctx);
@@ -9,6 +9,10 @@ const LEAD_COLS = "id,name,phone,channel,model_id,stage,score,score_breakdown,te
 export function StoreProvider({ children }) {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(null);
+  // undefined = revisando, null = sin sesión (pide entrar), objeto = con sesión.
+  // Antes la app entraba sola con un usuario demo cuya contraseña iba en el código: cualquiera que abriera
+  // la página podía leer y cambiar los leads. Ahora hay que entrar con usuario y contraseña.
+  const [session, setSession] = useState(undefined);
   const [leads, setLeads] = useState([]);
   const [sellers, setSellers] = useState([]);
   const [models, setModels] = useState([]);
@@ -50,15 +54,32 @@ export function StoreProvider({ children }) {
   }, [toast]);
 
   useEffect(() => {
+    sb.auth.getSession().then(({ data }) => setSession(data.session || null));
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setSession(s || null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const signIn = useCallback(async (email, password) => {
+    const { error: e } = await sb.auth.signInWithPassword({ email: email.trim(), password });
+    if (e) throw new Error(e.message === "Invalid login credentials" ? "El correo o la contraseña no coinciden." : e.message);
+  }, []);
+  const signOut = useCallback(async () => {
+    await sb.auth.signOut();
+    setReady(false); setLeads([]); setQuotes([]); setStats({}); setSettings({});
+  }, []);
+
+  const hasSession = !!session;
+  useEffect(() => {
+    if (!hasSession) return;
     let ch, poll, live = false;
     (async () => {
       try {
-        await ensureDemoSession();
         const [s, m, b, st] = await Promise.all([
           sb.from("sellers").select("*").order("name"),
           sb.from("models").select("*").order("sort"),
           sb.from("brands").select("*").order("sort"),
-          sb.from("settings").select("*"),
+          // La llave de entrada de leads no se baja al navegador: solo la usan las edge functions.
+          sb.from("settings").select("*").neq("key", "ingest_key"),
         ]);
         setSellers(s.data || []); setModels(m.data || []); setBrands(b.data || []);
         setSettings(Object.fromEntries((st.data || []).map((r) => [r.key, r.value])));
@@ -91,7 +112,7 @@ export function StoreProvider({ children }) {
     })();
     const iv = setInterval(() => setTick((t) => t + 1), 30000); // refresca relojes de SLA
     return () => { ch && sb.removeChannel(ch); clearInterval(iv); clearInterval(poll); };
-  }, [loadLeads, toast]);
+  }, [hasSession, loadLeads, toast]);
 
   // Cotizaciones y estadísticas de mensajes (para recordatorios y rendimiento)
   const loadAux = useCallback(async () => {
@@ -128,6 +149,7 @@ export function StoreProvider({ children }) {
   }, []);
 
   const value = {
+    session, signIn, signOut,
     ready, error, leads, visibleLeads, sellers, vendedores, models, brands, settings, sellerById, modelById,
     viewAs, setViewAs, toast, toasts, tick, loadLeads, updateLead, quotes, stats, loadAux,
     meId: viewAs.role === "vendedor" ? viewAs.sellerId || vendedores[0]?.id : null,

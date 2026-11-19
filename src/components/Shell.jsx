@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { can } from "../lib/perm";
@@ -68,9 +69,40 @@ export function Guard({ sec, children }) {
   );
 }
 
+function Login() {
+  const { signIn } = useStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true); setErr("");
+    try { await signIn(email, password); } catch (x) { setErr(x.message); setBusy(false); }
+  };
+  return (
+    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 16 }}>
+      <form className="card" onSubmit={submit} style={{ width: "100%", maxWidth: 360, gap: 14 }}>
+        <img src={assetFile("glt_icon.png")} alt="Grupo Los Tres" style={{ width: 48 }} />
+        <h2 style={{ margin: 0 }}>Entrar a GLT Connect</h2>
+        <label className="field"><span>Correo</span>
+          <input className="inp" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        </label>
+        <label className="field"><span>Contraseña</span>
+          <input className="inp" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+        </label>
+        {err && <p role="alert" style={{ margin: 0, color: "var(--bad)", fontSize: 13 }}>{err}</p>}
+        <button className="btn" type="submit" disabled={busy}>{busy ? "Entrando…" : "Entrar"}</button>
+      </form>
+    </div>
+  );
+}
+
 export default function Shell() {
-  const { ready, error, viewAs } = useStore();
+  const { ready, error, viewAs, session, signOut } = useStore();
   const loc = useLocation();
+  if (session === undefined) return <Loading text="Conectando con GLT Connect…" />;
+  if (!session) return <Login />;
   return (
     <div className="shell">
       <nav className="side" aria-label="Navegación">
@@ -81,6 +113,7 @@ export default function Shell() {
           </NavLink>
         ))}
         <div className="spacer" />
+        <button type="button" onClick={signOut} title="Salir" aria-label="Salir" style={{ border: 0, background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "inherit", padding: 8 }}>Salir</button>
       </nav>
       <main className="main">
         {error ? <div className="card"><h2>No se pudo conectar</h2><p className="muted">{error}</p></div> : ready ? <Outlet /> : <Loading text="Conectando con GLT Connect…" />}

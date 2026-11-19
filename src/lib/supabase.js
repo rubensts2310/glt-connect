@@ -19,14 +19,3 @@ export async function fn(name, body) {
   if (!r.ok) throw new Error(d.error || `Error ${r.status}`);
   return d;
 }
-
-export async function ensureDemoSession() {
-  const { data } = await sb.auth.getSession();
-  if (data.session) return data.session;
-  const { data: d, error } = await sb.auth.signInWithPassword({
-    email: import.meta.env.VITE_DEMO_EMAIL || "demo@gltconnect.app",
-    password: import.meta.env.VITE_DEMO_PASSWORD || "vkCQGU61dhdZ_83zabPOnV_5",
-  });
-  if (error) throw error;
-  return d.session;
-}
