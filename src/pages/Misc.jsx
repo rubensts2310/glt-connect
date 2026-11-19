@@ -135,7 +135,7 @@ export function Integraciones() {
       <div className="card">
         <h2>API de entrada de leads</h2>
         <p className="muted" style={{ margin: 0 }}>Cualquier fuente envía un POST con <code className="mono">name, phone, email, channel, model_id, message</code>. El bot hace el primer contacto al instante.</p>
-        <code className="mono" style={{ background: "var(--card2)", padding: 12, borderRadius: 12, userSelect: "all", wordBreak: "break-all" }}>POST {url}<br />x-glt-key: {settings.ingest_key}</code>
+        <code className="mono" style={{ background: "var(--card2)", padding: 12, borderRadius: 12, userSelect: "all", wordBreak: "break-all" }}>POST {url}<br />x-glt-key: (llave privada; se entrega por separado a cada integración)</code>
       </div>
     </>
   );
